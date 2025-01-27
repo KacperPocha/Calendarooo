@@ -31,40 +31,6 @@
 - **Express**: Framework webowy ułatwiający tworzenie endpointów API.
 - **SQLite**: Lekka baza danych do przechowywania informacji o wydarzeniach.
 
-## Instalacja
-
-1. **Sklonuj repozytorium**:
-   ```bash
-   git clone https://github.com/username/calendaroo.git
-   cd calendaroo
-   ```
-
-2. **Zainstaluj zależności**:
-   - Backend:
-     ```bash
-     cd backend
-     npm install
-     ```
-   - Frontend:
-     ```bash
-     cd frontend
-     npm install
-     ```
-
-3. **Uruchom aplikację**:
-   - Backend:
-     ```bash
-     cd backend
-     npm start
-     ```
-   - Frontend:
-     ```bash
-     cd frontend
-     npm start
-     ```
-
-4. **Otwórz aplikację**:
-   W przeglądarce otwórz [http://localhost:3000](http://localhost:3000).
 
 ## Struktura projektu
 
