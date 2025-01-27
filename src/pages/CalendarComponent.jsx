@@ -201,7 +201,7 @@ export const CalendarComponent = ({ workHoursInfo, daysArrayFromChild }) => {
 
 
   return (
-    <div className="p-4 max-w-4xl mx-auto">
+    <div className="p-4  mx-auto">
       <PopUp
         isOpen={isPopUpOpen}
         onClose={() => SetIsPopUpOpen(false)}
@@ -248,7 +248,7 @@ export const CalendarComponent = ({ workHoursInfo, daysArrayFromChild }) => {
               <div
                 key={index}
                 onClick={() => { { dayObj.isNextMonth ? changeMonth(1) : handleDayClick(dayObj) }; { dayObj.isPreviousMonth ? changeMonth(-1) : handleDayClick(dayObj) } }}
-                className={`relative h-24 flex flex-col border rounded shadow cursor-pointer hover:scale-105 ${dayObj.isOtherMonth
+                className={`relative h-28 flex flex-col border rounded shadow cursor-pointer hover:scale-105 ${dayObj.isOtherMonth
                     ? "bg-gray-300"
                     : "bg-gray-100 hover:bg-blue-100"
                   } ${isHoliday(dayObj.day) && !dayObj.isOtherMonth ? "bg-red-200" : ""}`}

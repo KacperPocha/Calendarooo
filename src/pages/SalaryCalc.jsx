@@ -34,7 +34,7 @@ export const SalaryCalc = ({ workHoursInfo, userRate, daysArray }) => {
   
 
   return (
-    <div className='w-max '>
+    <div className='w-full mt-24'>
       <div className='grid justify-items-center'>
         <div className='mt-4 grid grid-col justify-items-center'>
           <label htmlFor="hours" className='mb-2'>Godzin do wyrobienia: </label>

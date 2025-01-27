@@ -63,7 +63,7 @@ export const Calendar = () => {
 
 
   return (
-    <div className="ml-4 mr-4">
+    <div className="w-full">
       <UserSettings
         isOpen={isPopUpOpen}
         onClose={() => SetIsPopUpOpen(false)}
@@ -86,14 +86,14 @@ export const Calendar = () => {
           </p>
         </div>
       </div>
-      <div className="grid grid-cols-12 w-full gap-4">
-        <div className="flex col-span-2 justify-center">NOTATNIK</div>
-        <div className="col-span-8 col-start-3">
+      <div className="grid grid-cols-12 w-full">
+        <div className="col-span-3">NOTATNIK</div>
+        <div className="col-span-6 col-start-4">
           <CalendarComponent workHoursInfo={getData}
           daysArrayFromChild={handleDaysArrayFromChild} 
           />
         </div>
-        <div className="flex justify-center col-span-2">
+        <div className="col-span-3">
           <SalaryCalc workHoursInfo={hours}
           userRate={user.rate}
           daysArray={daysArrayFromChild}
