@@ -23,6 +23,8 @@ db.run(`
       nadgodziny100 INTEGER,
       nieobecnosc TEXT,
       stawkaBrutto REAL,
+      noteTitle TEXT,
+      noteDescription TEXT,
       user_id INTEGER,
       FOREIGN KEY(user_id) REFERENCES users(id)
   )
