@@ -10,6 +10,7 @@ export const CalendarComponent = ({ workHoursInfo, daysArrayFromChild }) => {
   const [userID, setUserID] = useState(null);
   const [isPopUpOpen, SetIsPopUpOpen] = useState(false);
   const [holidays, setHolidays] = useState([])
+  const [dataDay, setDataDay] = useState([])
 
   useEffect(() => {
     workHoursInfo(workHours)
@@ -87,13 +88,12 @@ export const CalendarComponent = ({ workHoursInfo, daysArrayFromChild }) => {
       currentDate.getFullYear(),
       currentDate.getMonth()
     );
-  
     const prevMonthDays = firstDayOfMonth === 0 ? 6 : firstDayOfMonth - 1;
     const prevMonthDate = new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1); // Poprzedni miesiąc
     const prevMonthLastDay = getDaysInMonth(prevMonthDate.getFullYear(), prevMonthDate.getMonth());
-  
+
     const daysArray = [];
-  
+
     // Poprzedni miesiąc
     for (let i = prevMonthDays; i > 0; i--) {
       const date = new Date(prevMonthDate.getFullYear(), prevMonthDate.getMonth(), prevMonthLastDay - i + 1);
@@ -106,9 +106,11 @@ export const CalendarComponent = ({ workHoursInfo, daysArrayFromChild }) => {
         isNextMonth: false,
         isWeekend: dayOfWeek === 0 || dayOfWeek === 6,
         isHoliday: holidays.some((holiday) => holiday.date === dayKey),
+        noteTitle: dataDay.find((entry) => entry.data === dayKey)?.noteTitle || null
+
       });
     }
-  
+
     // Bieżący miesiąc
     for (let i = 1; i <= daysInMonth; i++) {
       const date = new Date(currentDate.getFullYear(), currentDate.getMonth(), i);
@@ -121,9 +123,11 @@ export const CalendarComponent = ({ workHoursInfo, daysArrayFromChild }) => {
         isNextMonth: false,
         isWeekend: dayOfWeek === 0 || dayOfWeek === 6,
         isHoliday: holidays.some((holiday) => holiday.date === dayKey),
+        noteTitle: dataDay.find((entry) => entry.data === dayKey)?.noteTitle || null
+
       });
     }
-  
+
     // Następny miesiąc
     const remainingDays = 7 - (daysArray.length % 7);
     if (remainingDays !== 7) {
@@ -131,7 +135,7 @@ export const CalendarComponent = ({ workHoursInfo, daysArrayFromChild }) => {
         const date = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, i);
         const dayOfWeek = date.getDay();
         const dayKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
-  
+
         daysArray.push({
           day: i,
           isOtherMonth: true,
@@ -139,18 +143,20 @@ export const CalendarComponent = ({ workHoursInfo, daysArrayFromChild }) => {
           isNextMonth: true,
           isWeekend: dayOfWeek === 0 || dayOfWeek === 6,
           isHoliday: holidays.some((holiday) => holiday.date === dayKey),
+          noteTitle: dataDay.find((entry) => entry.data === dayKey)?.noteTitle || null
+
         });
       }
     }
-  
+    console.log(daysArray)
     return daysArray;
   };
-  
-  
+
+
   useEffect(() => {
     daysArrayFromChild(generateDays());
   }, [currentDate, holidays]);
-  
+
 
 
   const changeMonth = (direction) => {
@@ -176,8 +182,7 @@ export const CalendarComponent = ({ workHoursInfo, daysArrayFromChild }) => {
         acc[entry.data] = entry.godzinyPrzepracowane + entry.nadgodziny50 + entry.nadgodziny100;
         return acc;
       }, {});
-      console.log(response.data)
-      console.log(formattedData)
+      setDataDay(workHoursData)
       setWorkHours(formattedData);
     } catch (error) {
       console.error("Błąd podczas pobierania godzin:", error);
@@ -195,7 +200,6 @@ export const CalendarComponent = ({ workHoursInfo, daysArrayFromChild }) => {
       SetIsPopUpOpen(true);
     }
   };
-
 
 
 
@@ -249,28 +253,36 @@ export const CalendarComponent = ({ workHoursInfo, daysArrayFromChild }) => {
                 key={index}
                 onClick={() => { { dayObj.isNextMonth ? changeMonth(1) : handleDayClick(dayObj) }; { dayObj.isPreviousMonth ? changeMonth(-1) : handleDayClick(dayObj) } }}
                 className={`relative h-28 flex flex-col border rounded shadow cursor-pointer hover:scale-105 ${dayObj.isOtherMonth
-                    ? "bg-gray-300"
-                    : "bg-gray-100 hover:bg-blue-100"
+                  ? "bg-gray-300"
+                  : "bg-gray-100 hover:bg-blue-100"
                   } ${isHoliday(dayObj.day) && !dayObj.isOtherMonth ? "bg-red-200" : ""}`}
               >
                 {/* Umieszczenie liczby dnia w prawym górnym rogu */}
                 <span className="absolute top-1 right-2 text-lg font-bold">
                   {dayObj.day}
                 </span>
-                {isHoliday(dayObj.day) && !dayObj.isOtherMonth &&(
-                  <span className="absolute bottom-2 left-2 text-xs text-red-600">
+                {isHoliday(dayObj.day) && !dayObj.isOtherMonth && (
+                  <span className="absolute bottom-1 left-2 text-xs text-red-600">
                     {holidays.find(holiday => holiday.date === dayKey).localName}
                   </span>
                 )}
 
                 {/* Wyświetlenie godzin */}
                 {!dayObj.isOtherMonth && (
-                  <div className="flex items-center justify-center h-full cursor-pointer">
+                  <div className="flex items-center justify-center h-full cursor-pointer mb-4">
                     <span className="text-2xl font-medium">
                       {workHours[dayKey] ? `${workHours[dayKey]}h` : ""}
                     </span>
                   </div>
                 )}
+                {dayObj.noteTitle &&
+                  <div className="absolute top-16 bg-yellow-300 rounded rounded-2xl pl-2 pr-2 ml-1">
+                    <span>{dayObj.noteTitle.length > 10
+                      ? dayObj.noteTitle.substring(0, 10) + "..."
+                      : dayObj.noteTitle}</span>
+                  </div>
+                }
+
               </div>
             );
           })}

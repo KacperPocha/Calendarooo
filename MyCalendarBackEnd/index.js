@@ -70,7 +70,6 @@ app.get("/api/get-user-info/:userID", (req, res) => {
   });
 });
 
-
 app.get("/api/get-calendar-data/:userID/:year/:month", (req, res) => {
   const userID = req.params.userID;
   const year = req.params.year;
@@ -122,10 +121,16 @@ app.get("/api/get-popup-data/:userID/:date", (req, res) => {
 app.put("/api/update-work-hours/:userID/:date", (req, res) => {
   const userID = req.params.userID;
   const date = req.params.date;
-  const { godzinyPrzepracowane, nadgodziny50, nadgodziny100, nieobecnosc } = req.body;
+  const {
+    godzinyPrzepracowane,
+    nadgodziny50,
+    nadgodziny100,
+    nieobecnosc,
+    noteTitle,
+    noteDescription,
+  } = req.body;
 
-
-  const query = `SELECT godzinyPrzepracowane, nadgodziny50, nadgodziny100, nieobecnosc FROM work_hours WHERE user_id = ? AND data = ?`;
+  const query = `SELECT godzinyPrzepracowane, nadgodziny50, nadgodziny100, nieobecnosc, noteTitle, noteDescription FROM work_hours WHERE user_id = ? AND data = ?`;
 
   db.get(query, [userID, date], (err, row) => {
     if (err) {
@@ -136,45 +141,72 @@ app.put("/api/update-work-hours/:userID/:date", (req, res) => {
     if (!row) {
       // Jeśli brak danych, dodajemy nowe
       const insertQuery = `
-        INSERT INTO work_hours (data, godzinyPrzepracowane, nadgodziny50, nadgodziny100, nieobecnosc, user_id)
-        VALUES (?, ?, ?, ?, ?, ?)
+        INSERT INTO work_hours (data, godzinyPrzepracowane, nadgodziny50, nadgodziny100, nieobecnosc, noteTitle, noteDescription, user_id)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
       `;
-      
-      db.run(insertQuery, [date, godzinyPrzepracowane, nadgodziny50, nadgodziny100, nieobecnosc, userID], function (err) {
-        if (err) {
-          console.error("Błąd podczas dodawania godzin:", err.message);
-          return res.status(500).json({ message: "Błąd podczas dodawania danych" });
+
+      db.run(
+        insertQuery,
+        [
+          date,
+          godzinyPrzepracowane,
+          nadgodziny50,
+          nadgodziny100,
+          nieobecnosc,
+          noteTitle,
+          noteDescription,
+          userID,
+        ],
+        function (err) {
+          if (err) {
+            console.error("Błąd podczas dodawania godzin:", err.message);
+            return res
+              .status(500)
+              .json({ message: "Błąd podczas dodawania danych" });
+          }
+
+          res.json({ message: "Godziny zostały dodane do bazy danych" });
         }
-   
-        res.json({ message: "Godziny zostały dodane do bazy danych" });
-      });
+      );
     } else {
       // Jeśli dane istnieją, sprawdzamy, czy są różnice
       if (
         Number(row.godzinyPrzepracowane) !== Number(godzinyPrzepracowane) ||
         Number(row.nadgodziny50) !== Number(nadgodziny50) ||
         Number(row.nadgodziny100) !== Number(nadgodziny100) ||
-        row.nieobecnosc !== nieobecnosc
+        row.nieobecnosc !== nieobecnosc ||
+        row.noteTitle !== noteTitle ||
+        row.noteDescription !== noteDescription
       ) {
         const updateQuery = `
-          UPDATE work_hours
-          SET godzinyPrzepracowane = ?, nadgodziny50 = ?, nadgodziny100 = ?, nieobecnosc = ?
-          WHERE user_id = ? AND data = ?
-        `;
-        
-        db.run(updateQuery, [godzinyPrzepracowane, nadgodziny50, nadgodziny100, nieobecnosc, userID, date], function (err) {
-          if (err) {
-            console.error("Błąd podczas aktualizacji danych:", err.message);
-            return res.status(500).json({ message: "Błąd podczas aktualizacji danych" });
-          }
-          console.log("Zaktualizowano dane:", {
+  UPDATE work_hours
+  SET godzinyPrzepracowane = ?, nadgodziny50 = ?, nadgodziny100 = ?, nieobecnosc = ?, noteTitle = ?, noteDescription = ?
+  WHERE user_id = ? AND data = ?
+`;
+
+        db.run(
+          updateQuery,
+          [
             godzinyPrzepracowane,
             nadgodziny50,
             nadgodziny100,
             nieobecnosc,
-          });
-          res.json({ message: "Godziny zostały zaktualizowane" });
-        });
+            noteTitle,
+            noteDescription,
+            userID,
+            date,
+          ],
+          function (err) {
+            if (err) {
+              console.error("Błąd podczas aktualizacji danych:", err.message);
+              return res
+                .status(500)
+                .json({ message: "Błąd podczas aktualizacji danych" });
+            }
+
+            res.json({ message: "Godziny zostały zaktualizowane" });
+          }
+        );
       } else {
         console.log("Brak zmian w danych, godziny nie zostały zaktualizowane.");
         res.json({ message: "Godziny nie zostały zmienione" });
@@ -182,8 +214,6 @@ app.put("/api/update-work-hours/:userID/:date", (req, res) => {
     }
   });
 });
-
-
 
 app.post("/api/calculate-salary", (req, res) => {
   const { godzinyPrzepracowane, stawkaBrutto } = req.body;
@@ -251,14 +281,12 @@ app.delete("/users/:id", (req, res) => {
   });
 });
 
-
 app.put("/api/updaterate/:userID", (req, res) => {
   const userID = req.params.userID;
   const { rate } = req.body;
 
-
   const query = `SELECT rate FROM users WHERE id = ?`;
-  
+
   db.get(query, [userID], (err, row) => {
     if (err) {
       console.error("Błąd podczas szukania użytkownika", err.message);
@@ -273,10 +301,14 @@ app.put("/api/updaterate/:userID", (req, res) => {
       db.run(insertQuery, [userID, rate], function (err) {
         if (err) {
           console.error("Błąd podczas dodawania stawki", err.message);
-          return res.status(500).json({ message: "Błąd podczas dodawania danych" });
+          return res
+            .status(500)
+            .json({ message: "Błąd podczas dodawania danych" });
         }
         console.log(`Stawka użytkownika ${userID} została dodana`);
-        res.status(201).json({ message: "Stawka została dodana do bazy danych" });
+        res
+          .status(201)
+          .json({ message: "Stawka została dodana do bazy danych" });
       });
     } else {
       if (row.rate !== rate) {
@@ -288,7 +320,9 @@ app.put("/api/updaterate/:userID", (req, res) => {
         db.run(updateQuery, [rate, userID], function (err) {
           if (err) {
             console.error("Błąd podczas aktualizacji danych:", err.message);
-            return res.status(500).json({ message: "Błąd podczas aktualizacji danych" });
+            return res
+              .status(500)
+              .json({ message: "Błąd podczas aktualizacji danych" });
           }
           console.log(`Stawka użytkownika ${userID} została zaktualizowana`);
           res.json({ message: "Stawka została zaktualizowana" });

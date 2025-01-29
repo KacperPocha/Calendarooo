@@ -22,7 +22,11 @@ const PopUp = ({ isOpen, onClose, selectedDate, setSelectedDate, fetchWorkHours 
 
 
 
-
+  useEffect(() => {
+    if (selectedDate) {
+      fetchWorkHoursData();
+    }
+  }, [selectedDate]);
 
 
   const fetchWorkHoursData = async () => {
@@ -32,22 +36,19 @@ const PopUp = ({ isOpen, onClose, selectedDate, setSelectedDate, fetchWorkHours 
       const response = await axios.get(
         `http://localhost:5000/api/get-popup-data/${userID}/${data}`
       );
-
       setWorkHoursData(response.data);
       setWorkHours(response.data?.godzinyPrzepracowane || 0);
       setnadgodziny50(response.data?.nadgodziny50 || 0);
       setnadgodziny100(response.data?.nadgodziny100 || 0);
       setnieobecnosc(response.data?.nieobecnosc || null);
+      setNoteTitle(response.data?.noteTitle ?? null);
+      setNoteDescription(response.data?.noteDescription ?? null);
     } catch (error) {
       console.error("Błąd podczas pobierania godzin:", error);
     }
   };
 
-  useEffect(() => {
-    if (selectedDate) {
-      fetchWorkHoursData();
-    }
-  }, [selectedDate]);
+
 
   const changeDate = (dir) => {
     const newDate = new Date(selectedDate);
@@ -69,7 +70,9 @@ const PopUp = ({ isOpen, onClose, selectedDate, setSelectedDate, fetchWorkHours 
       parsedWorkHours !== workHoursData?.godzinyPrzepracowane ||
       nadgodziny50 !== workHoursData?.nadgodziny50 ||
       nadgodziny100 !== workHoursData?.nadgodziny100 ||
-      nieobecnosc !== workHoursData?.nieobecnosc
+      nieobecnosc !== workHoursData?.nieobecnosc ||
+      noteTitle !== workHoursData?.noteTitle ||
+      noteDescription !== workHoursData?.noteDescription
     ) {
       const userID = localStorage.getItem("userID");
 
@@ -81,6 +84,8 @@ const PopUp = ({ isOpen, onClose, selectedDate, setSelectedDate, fetchWorkHours 
             nadgodziny50: nadgodziny50,
             nadgodziny100: nadgodziny100,
             nieobecnosc: nieobecnosc,
+            noteTitle: noteTitle,
+            noteDescription: noteDescription
           }
         );
         console.log("Odpowiedź z backendu:", response.data);
@@ -88,6 +93,8 @@ const PopUp = ({ isOpen, onClose, selectedDate, setSelectedDate, fetchWorkHours 
         setnadgodziny50(nadgodziny50);
         setnadgodziny100(nadgodziny100);
         setnieobecnosc(nieobecnosc);
+        setNoteTitle(noteTitle)
+        setNoteDescription(noteDescription)
         onClose();
         fetchWorkHours(); // Ponowne pobranie danych
       } catch (error) {
@@ -212,7 +219,7 @@ const PopUp = ({ isOpen, onClose, selectedDate, setSelectedDate, fetchWorkHours 
               )}
             </div>
           </div>
-  
+
           {notes && (
             <div className="grid gap-6">
               <div className="w-full">
@@ -221,7 +228,7 @@ const PopUp = ({ isOpen, onClose, selectedDate, setSelectedDate, fetchWorkHours 
                   className="w-full bg-transparent placeholder:text-slate-400 text-slate-700 text-sm border border-slate-200 rounded-md px-3 py-2 transition duration-300 ease focus:outline-none focus:border-slate-400 hover:border-slate-300 shadow-sm"
                   placeholder="Type here..."
                   type="text"
-                  value={noteTitle}
+                  value={noteTitle || ""}
                   onChange={(e) => setNoteTitle(e.target.value)}
                 />
               </div>
@@ -231,20 +238,20 @@ const PopUp = ({ isOpen, onClose, selectedDate, setSelectedDate, fetchWorkHours 
                   className="w-full bg-transparent placeholder:text-slate-400 text-slate-700 text-sm border border-slate-200 rounded-md px-3 py-2 transition duration-300 ease focus:outline-none focus:border-slate-400 hover:border-slate-300 shadow-sm"
                   placeholder="Type here..."
                   type="textarea"
-                  value={noteDescription}
+                  value={noteDescription || ""}
                   onChange={(e) => setNoteDescription(e.target.value)}
                 />
               </div>
             </div>
           )}
-  
+
           <button
             type="submit"
             className="bg-blue-500 text-white py-2 rounded hover:bg-blue-600"
           >
             Zapisz
           </button>
-  
+
           <div className="flex justify-center mt-4 space-x-4">
             <button
               type="button"
@@ -265,7 +272,7 @@ const PopUp = ({ isOpen, onClose, selectedDate, setSelectedDate, fetchWorkHours 
       </div>
     </div>
   );
-  
+
 };
 
 export default PopUp;
