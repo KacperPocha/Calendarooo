@@ -5,6 +5,7 @@ import axios from "axios";
 import { CalendarComponent } from "./CalendarComponent";
 import { SalaryCalc } from "./SalaryCalc";
 import UserSettings from "./userSettings";
+import { Notes } from "./Notes";
 
 export const Calendar = () => {
   const [userId, setUserId] = useState(null);
@@ -87,7 +88,9 @@ export const Calendar = () => {
         </div>
       </div>
       <div className="grid grid-cols-12 w-full">
-        <div className="col-span-3">NOTATNIK</div>
+        <div className="col-span-3">
+          <Notes/>
+        </div>
         <div className="col-span-6 col-start-4">
           <CalendarComponent workHoursInfo={getData}
           daysArrayFromChild={handleDaysArrayFromChild} 

@@ -148,7 +148,7 @@ export const CalendarComponent = ({ workHoursInfo, daysArrayFromChild }) => {
         });
       }
     }
-    console.log(daysArray)
+
     return daysArray;
   };
 
@@ -190,6 +190,7 @@ export const CalendarComponent = ({ workHoursInfo, daysArrayFromChild }) => {
   };
 
   useEffect(() => {
+    localStorage.setItem("date", currentDate)
     fetchWorkHours();
   }, [currentDate]);
 
@@ -276,10 +277,8 @@ export const CalendarComponent = ({ workHoursInfo, daysArrayFromChild }) => {
                   </div>
                 )}
                 {dayObj.noteTitle &&
-                  <div className="absolute top-16 bg-yellow-300 rounded rounded-2xl pl-2 pr-2 ml-1">
-                    <span>{dayObj.noteTitle.length > 10
-                      ? dayObj.noteTitle.substring(0, 10) + "..."
-                      : dayObj.noteTitle}</span>
+                  <div className="absolute top-16 bg-yellow-300 rounded rounded-2xl pl-2 pr-2 ml-1 max-w-28 text-sm truncate">
+                    <span>{dayObj.noteTitle}</span>
                   </div>
                 }
 
