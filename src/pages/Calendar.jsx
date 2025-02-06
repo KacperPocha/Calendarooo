@@ -89,14 +89,14 @@ export const Calendar = () => {
         </div>
       </div>
       <div className="grid grid-cols-12 w-full">
-        <div className="col-span-3">
+        <div className=" col-span-3">
           <Notes
             ref={notesRef} />
         </div>
         <div className="col-span-6 col-start-4">
           <CalendarComponent workHoursInfo={getData}
             daysArrayFromChild={handleDaysArrayFromChild}
-            onRefreshNotes={() => notesRef.current?.fetchNotes()}
+            onRefreshNotes={() => notesRef.current?.fetchWorkHours()}
           />
         </div>
         <div className="col-span-3">

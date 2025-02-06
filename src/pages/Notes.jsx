@@ -7,8 +7,11 @@ export const Notes = forwardRef((props, ref) => {
     const date = localStorage.getItem("date");
     const [isPopUpOpen, SetIsPopUpOpen] = useState(false);
     const [selectedDate, setSelectedDate] = useState(null)
+    const localDate = new Date()
+    const now = `${localDate.getFullYear()}-${String(localDate.getMonth() + 1).padStart(2, "0")}-${String(localDate.getDate()).padStart(2, "0")}`
 
-    const fetchNotes = async () => {
+
+    const fetchWorkHours = async () => {
         const userID = localStorage.getItem("userID");
         const date = new Date(localStorage.getItem("date"));
         const month = (date.getMonth() + 1).toString().padStart(2, "0");
@@ -23,28 +26,34 @@ export const Notes = forwardRef((props, ref) => {
     };
 
     useImperativeHandle(ref, () => ({
-        fetchNotes
+        fetchWorkHours
     }))
 
     useEffect(() => {
-        fetchNotes();
+        fetchWorkHours()
     }, [date]);
 
     return (
         <div className="ml-4">
             <PopUp
-            fetchNotes={fetchNotes}
-            isOpen={isPopUpOpen}
-            onClose={() => SetIsPopUpOpen(false)}
-            selectedDate={selectedDate}
+                fetchWorkHours={fetchWorkHours}
+                isOpen={isPopUpOpen}
+                onClose={() => SetIsPopUpOpen(false)}
+                selectedDate={selectedDate}
             />
             <h1 className="text-xl mt-20 mb-2">Notatki:</h1>
             <div>
                 {notatki.map((notatka, index) => (
-                    <div key={index} className="grid mb-4 cursor-pointer hover:scale-[1.01]" onClick={() => {SetIsPopUpOpen(true), setSelectedDate(notatka.data) }}>
-                        <span className="bg-blue-500 text-white w-max px-2 rounded-xl mb-1">{notatka.data}: </span>
-                        <span className="bg-yellow-400 rounded-xl w-max px-2">{notatka.noteTitle}</span>
-                    </div>
+                    notatka.data < now ?
+                        <div key={index} className="grid mb-4 cursor-pointer hover:scale-[1.01]" onClick={() => { SetIsPopUpOpen(true), setSelectedDate(notatka.data) }}>
+                            <span className="bg-gray-500 text-white w-max px-2 rounded-xl mb-1">{notatka.data}: </span>
+                            <span className="bg-gray-300 rounded-xl w-max px-2">{notatka.noteTitle}</span>
+                        </div>
+                        :
+                        <div key={index} className="grid mb-4 cursor-pointer hover:scale-[1.01]" onClick={() => { SetIsPopUpOpen(true), setSelectedDate(notatka.data) }}>
+                            <span className="bg-blue-500 text-white w-max px-2 rounded-xl mb-1">{notatka.data}: </span>
+                            <span className="bg-yellow-400 rounded-xl w-max px-2">{notatka.noteTitle}</span>
+                        </div>
                 ))}
             </div>
         </div>

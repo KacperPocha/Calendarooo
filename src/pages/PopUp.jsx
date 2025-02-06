@@ -97,7 +97,6 @@ const PopUp = ({ isOpen, onClose, selectedDate, setSelectedDate, fetchWorkHours,
         setNoteTitle(noteTitle)
         setNoteDescription(noteDescription)
         onClose();
-        fetchNotes()
         fetchWorkHours();
         
         
