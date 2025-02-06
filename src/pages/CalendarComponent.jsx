@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react";
 import PopUp from "./PopUp";
 import { useFetcher } from "react-router-dom";
 
-export const CalendarComponent = ({ workHoursInfo, daysArrayFromChild }) => {
+export const CalendarComponent = ({ workHoursInfo, daysArrayFromChild, onRefreshNotes }) => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [workHours, setWorkHours] = useState([]);
   const [selectedDate, setSelectedDate] = useState("");
@@ -184,6 +184,7 @@ export const CalendarComponent = ({ workHoursInfo, daysArrayFromChild }) => {
       }, {});
       setDataDay(workHoursData)
       setWorkHours(formattedData);
+      onRefreshNotes()
     } catch (error) {
       console.error("Błąd podczas pobierania godzin:", error);
     }

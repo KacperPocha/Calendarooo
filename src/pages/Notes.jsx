@@ -1,7 +1,7 @@
 import axios from 'axios';
-import React, { useEffect, useState } from 'react'
+import React, { forwardRef, useEffect, useImperativeHandle, useState } from 'react'
 
-export const Notes = () => {
+export const Notes = forwardRef((props, ref) => {
     const [notatki, setNotatki] = useState([]);
     const date = localStorage.getItem("date");
 
@@ -19,6 +19,10 @@ export const Notes = () => {
         }
     };
 
+    useImperativeHandle(ref, () => ({
+        fetchNotes
+    }))
+
     useEffect(() => {
         fetchNotes();
     }, [date]);
@@ -26,7 +30,6 @@ export const Notes = () => {
     return (
         <div className="ml-4">
             <h1 className="text-xl mt-20 mb-2">Notatki:</h1>
-            <NoteInput onNoteAdded={fetchNotes} />
             <div>
                 {notatki.map((notatka, index) => (
                     <div key={index} className="grid mb-4">
@@ -37,4 +40,4 @@ export const Notes = () => {
             </div>
         </div>
     );
-};
+});

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import jwt_decode from "jwt-decode";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
@@ -13,6 +13,7 @@ export const Calendar = () => {
   const [hours, setHours] = useState([]);
   const [isPopUpOpen, SetIsPopUpOpen] = useState(false);
   const [daysArrayFromChild, setDaysArrayFromChild] = useState([])
+  const notesRef = useRef()
 
 
   const navigate = useNavigate();
@@ -89,17 +90,19 @@ export const Calendar = () => {
       </div>
       <div className="grid grid-cols-12 w-full">
         <div className="col-span-3">
-          <Notes/>
+          <Notes
+            ref={notesRef} />
         </div>
         <div className="col-span-6 col-start-4">
           <CalendarComponent workHoursInfo={getData}
-          daysArrayFromChild={handleDaysArrayFromChild} 
+            daysArrayFromChild={handleDaysArrayFromChild}
+            onRefreshNotes={() => notesRef.current?.fetchNotes()}
           />
         </div>
         <div className="col-span-3">
           <SalaryCalc workHoursInfo={hours}
-          userRate={user.rate}
-          daysArray={daysArrayFromChild}
+            userRate={user.rate}
+            daysArray={daysArrayFromChild}
           />
         </div>
       </div>

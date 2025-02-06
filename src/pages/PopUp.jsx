@@ -1,7 +1,7 @@
 import axios from "axios";
 import React, { useEffect, useState } from "react";
 
-const PopUp = ({ isOpen, onClose, selectedDate, setSelectedDate, fetchWorkHours, onNoteAdded }) => {
+const PopUp = ({ isOpen, onClose, selectedDate, setSelectedDate, fetchWorkHours }) => {
   const [workHoursData, setWorkHoursData] = useState(null);
   const [workHours, setWorkHours] = useState(0);
   const [nadgodziny50, setnadgodziny50] = useState(0);
@@ -95,7 +95,6 @@ const PopUp = ({ isOpen, onClose, selectedDate, setSelectedDate, fetchWorkHours,
         setnieobecnosc(nieobecnosc);
         setNoteTitle(noteTitle)
         setNoteDescription(noteDescription)
-        onNoteAdded();
         onClose();
         fetchWorkHours();
       } catch (error) {
