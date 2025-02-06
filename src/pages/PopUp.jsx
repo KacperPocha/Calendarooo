@@ -1,7 +1,7 @@
 import axios from "axios";
 import React, { useEffect, useState } from "react";
 
-const PopUp = ({ isOpen, onClose, selectedDate, setSelectedDate, fetchWorkHours }) => {
+const PopUp = ({ isOpen, onClose, selectedDate, setSelectedDate, fetchWorkHours, fetchNotes}) => {
   const [workHoursData, setWorkHoursData] = useState(null);
   const [workHours, setWorkHours] = useState(0);
   const [nadgodziny50, setnadgodziny50] = useState(0);
@@ -89,6 +89,7 @@ const PopUp = ({ isOpen, onClose, selectedDate, setSelectedDate, fetchWorkHours 
           }
         );
         console.log("Odpowiedź z backendu:", response.data);
+        
         setWorkHours(parsedWorkHours);
         setnadgodziny50(nadgodziny50);
         setnadgodziny100(nadgodziny100);
@@ -96,7 +97,10 @@ const PopUp = ({ isOpen, onClose, selectedDate, setSelectedDate, fetchWorkHours 
         setNoteTitle(noteTitle)
         setNoteDescription(noteDescription)
         onClose();
+        fetchNotes()
         fetchWorkHours();
+        
+        
       } catch (error) {
         console.error("Błąd podczas zapisywania godzin:", error);
       }

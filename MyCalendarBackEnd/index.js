@@ -344,7 +344,7 @@ app.get('/api/notatki/:userID/:year/:month', (req, res) => {
   const query = `
       SELECT data, noteTitle, noteDescription
       FROM work_hours
-      WHERE user_id = ? AND CAST(strftime('%Y', data) AS INTEGER) = ? AND CAST(strftime('%m', data) AS INTEGER) = ?
+      WHERE user_id = ? AND CAST(strftime('%Y', data) AS INTEGER) = ? AND CAST(strftime('%m', data) AS INTEGER) = ? AND noteTitle IS NOT NULL OR noteDescription IS NOT NULL
       GROUP BY data
   `;
 
