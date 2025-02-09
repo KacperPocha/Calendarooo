@@ -334,21 +334,20 @@ app.put("/api/updaterate/:userID", (req, res) => {
   });
 });
 
-
-app.get('/api/notatki/:userID/:year/:month', (req, res) => {
-  const userID = req.params.userID
+app.get("/api/notatki/:userID/:year/:month", (req, res) => {
+  const userID = req.params.userID;
   const year = req.params.year;
   const month = req.params.month;
-  const monthFormatted = req.params.month.toString().padStart(2, "0");
 
   const query = `
       SELECT data, noteTitle, noteDescription
       FROM work_hours
-      WHERE user_id = ? AND CAST(strftime('%Y', data) AS INTEGER) = ? AND CAST(strftime('%m', data) AS INTEGER) = ? AND noteTitle IS NOT NULL OR noteDescription IS NOT NULL
+      WHERE user_id = ? AND CAST(strftime('%Y', data) AS INTEGER) = ? AND CAST(strftime('%m', data) AS INTEGER) = ? AND (noteTitle IS NOT NULL OR noteDescription IS NOT NULL)
+
       GROUP BY data
   `;
 
-  db.all(query, [userID, year, monthFormatted], (err, rows) => {
+  db.all(query, [userID, year, month], (err, rows) => {
     if (err) {
       console.error("Błąd podczas pobierania danych:", err.message);
       res.status(500).json({ message: "Błąd serwera" });
@@ -357,4 +356,4 @@ app.get('/api/notatki/:userID/:year/:month', (req, res) => {
 
     res.json(rows);
   });
-})
+});

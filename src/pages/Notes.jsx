@@ -7,6 +7,7 @@ export const Notes = forwardRef((props, ref) => {
     const date = localStorage.getItem("date");
     const [isPopUpOpen, SetIsPopUpOpen] = useState(false);
     const [selectedDate, setSelectedDate] = useState(null)
+    const notesOpen = true
     const localDate = new Date()
     const now = `${localDate.getFullYear()}-${String(localDate.getMonth() + 1).padStart(2, "0")}-${String(localDate.getDate()).padStart(2, "0")}`
 
@@ -16,7 +17,6 @@ export const Notes = forwardRef((props, ref) => {
         const date = new Date(localStorage.getItem("date"));
         const month = (date.getMonth() + 1).toString().padStart(2, "0");
         const year = date.getFullYear();
-
         try {
             const response = await axios.get(`http://localhost:5000/api/notatki/${userID}/${year}/${month}`);
             setNotatki(response.data);
@@ -32,7 +32,7 @@ export const Notes = forwardRef((props, ref) => {
     useEffect(() => {
         fetchWorkHours()
     }, [date]);
-
+    console.log(notatki)
     return (
         <div className="ml-4">
             <PopUp
@@ -40,6 +40,7 @@ export const Notes = forwardRef((props, ref) => {
                 isOpen={isPopUpOpen}
                 onClose={() => SetIsPopUpOpen(false)}
                 selectedDate={selectedDate}
+                notesOpen={notesOpen}
             />
             <h1 className="text-xl mt-20 mb-2">Notatki:</h1>
             <div>

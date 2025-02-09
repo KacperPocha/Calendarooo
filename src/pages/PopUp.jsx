@@ -1,7 +1,7 @@
 import axios from "axios";
 import React, { useEffect, useState } from "react";
 
-const PopUp = ({ isOpen, onClose, selectedDate, setSelectedDate, fetchWorkHours, fetchNotes}) => {
+const PopUp = ({ isOpen, onClose, selectedDate, setSelectedDate, fetchWorkHours, notesOpen}) => {
   const [workHoursData, setWorkHoursData] = useState(null);
   const [workHours, setWorkHours] = useState(0);
   const [nadgodziny50, setnadgodziny50] = useState(0);
@@ -20,7 +20,9 @@ const PopUp = ({ isOpen, onClose, selectedDate, setSelectedDate, fetchWorkHours,
   const year = date.getFullYear();
   const data = `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
 
-
+  useEffect(() => {
+    setNotes(notesOpen)
+  }, [notesOpen])
 
   useEffect(() => {
     if (selectedDate) {
@@ -126,7 +128,7 @@ const PopUp = ({ isOpen, onClose, selectedDate, setSelectedDate, fetchWorkHours,
   return (
     <div
       className="fixed inset-0 flex justify-center items-center bg-black bg-opacity-50 z-50"
-      onClick={onClose}
+      onClick={() => {onClose(); setNotes(false)}}
     >
       <div
         className="flex flex-col bg-white rounded-lg shadow-lg p-6 w-full max-w-xl relative"
@@ -134,7 +136,7 @@ const PopUp = ({ isOpen, onClose, selectedDate, setSelectedDate, fetchWorkHours,
       >
         <div className="flex justify-end mb-4">
           <button
-            onClick={onClose}
+            onClick={() => {onClose(); setNotes(false)}}
             className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
           >
             Zamknij
