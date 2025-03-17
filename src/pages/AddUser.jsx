@@ -1,25 +1,51 @@
 import axios from 'axios'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import io from 'socket.io-client';
+
+const socket = io('http://localhost:3000');
 
 export const AddUser = () => {
     const [username, setusername] = useState("")
+    const [loading, setLoading] = useState(false)
     const navigate = useNavigate()
 
+    useEffect(() => {
+        socket.on('update-users', (newUserData) => {
+            console.log('Nowy użytkownik:', newUserData);
+        });
+
+        return () => {
+            socket.off('update-users');
+        };
+    }, []);
+
     const handleSubmit = async (e) => {
-        e.preventDefault()
-        try{
-            const response = await axios.post('http://localhost:5000/add-user', {
-                username
-            }) 
-            if(response)
-            console.log(response.data)
-            alert("Dane zostały dodane")
-            navigate('/')
-        } catch(error){
-            console.log(error)
+        e.preventDefault();
+        if (!username) {
+            alert("Wprowadź nazwę użytkownika!");
+            return;
         }
-    }
+        setLoading(true); 
+        try {
+            const response = await axios.post('http://localhost:3000/api/add-user', {
+                username
+            });
+            if (response) {
+                console.log(response.data);
+                alert("Dane zostały dodane!");
+
+                socket.emit('new-user', response.data);
+
+                navigate('/');
+            }
+        } catch (error) {
+            console.error(error);
+            alert("Wystąpił błąd podczas dodawania użytkownika.");
+        } finally {
+            setLoading(false); 
+        }
+    };
 
     const check = () => {
         navigate('/')

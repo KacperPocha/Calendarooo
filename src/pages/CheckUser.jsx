@@ -1,25 +1,53 @@
 import axios from 'axios'
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import io from 'socket.io-client';
+
+const socket = io('http://localhost:3000'); // Połączenie z WebSocket na backendzie
 
 export const CheckUser = () => {
-    const [username, setusername] = useState("")
-    const navigate = useNavigate()
+    const [username, setusername] = useState('');
+    const [loading, setLoading] = useState(false);
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        socket.on('user-logged-in', (userData) => {
+            console.log('Zalogowany użytkownik:', userData);
+            // Możesz wykonać dodatkowe operacje po otrzymaniu danych o zalogowanym użytkowniku
+        });
+
+        return () => {
+            socket.off('user-logged-in'); // Usuwamy nasłuchiwanie przy zamknięciu komponentu
+        };
+    }, []);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-    
+        if (!username) {
+            alert("Wprowadź nazwę użytkownika!");
+            return;
+        }
+        setLoading(true);
+
         try {
-            const response = await axios.post('http://localhost:5000/login', { username });
+            const response = await axios.post('http://localhost:3000/api/login', { username });
+            console.log(response.data)
             if (response.data.userID) {
-                localStorage.setItem('userID', response.data.userID); 
-                navigate('/calendar'); 
+                // Zapisujemy userID w localStorage
+                localStorage.setItem('userID', response.data.userID);
+                alert('Logowanie pomyślne!');
+                
+                socket.emit('user-logged-in', { userID: response.data.userID, username: username });
+                
+                navigate('/calendar');
             } else {
-                alert("Błąd logowania: Brak ID");
+                alert("Błąd logowania: Brak ID użytkownika");
             }
-        } catch (err) {
-            console.error(err);
-            alert("Użytkownik nie istnieje");
+        } catch (error) {
+            console.error(error);
+            alert("Błąd logowania. Użytkownik nie istnieje.");
+        } finally {
+            setLoading(false);
         }
     };
     console.log(localStorage)

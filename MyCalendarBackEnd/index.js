@@ -1,19 +1,99 @@
-const express = require("express");
-const sqlite3 = require("sqlite3").verbose();
-const bodyParser = require("body-parser");
-const cors = require("cors"); // Importowanie pakietu cors
-const app = express();
-const PORT = 3000;
+const express = require("express")
+const { sequelize, users, work_hours} = require("./db")
+const cors = require("cors")
+const http = require("http")
+const socketIO = require("socket.io")
 
-// Middleware do parsowania JSON-a
-app.use(bodyParser.json());
+const app = express()
+const server = http.createServer(app)
+const io = socketIO(server, {
+  cors: {
+    origin: "http://localhost:5173",
+    methods: ["GET", "POST"],
+    allowedHeaders: ["Content-Type"],
+    credentials: true,
+  },
+});
 
-// Ustawienie CORS, aby zezwalać na żądania z frontendu
-app.use(cors());
+const PORT = 3000
 
-// Połączenie z bazą danych SQLite
-const db = new sqlite3.Database("./database.db");
+app.use(express.json())
+app.use(cors())
 
+sequelize.sync().then(() => {
+  console.log("Baza danych została zsynchronizowana.");
+})
+
+io.on("connection", (socket) => {
+  console.log("Nowe połączenie WebSocket:", socket.id);
+
+  socket.on("new-note", (noteData) => {
+    console.log("Nowa notatka:", noteData);
+    
+    io.emit("update-notes", noteData);
+  });
+
+  socket.on("disconnect", () => {
+    console.log("Połączenie zamknięte:", socket.id);
+  });
+});
+
+
+
+app.get("/api/get-user-hours/:userID", async (req,res) => {
+  try{
+    const userID = req.params.userID
+    const work_hours = await work_hours.findAll({
+      where: {user_id: userID},
+    })
+    res.json(work_hours)
+  }catch(err) {
+    console.error(err.message);
+    res.status(500).json({ message: "Błąd podczas pobierania danych" });
+  }
+})
+
+app.post("/api/add-user", async (req,res) => {
+  try{
+    const {username, rate} = req.body
+    const newUser = await users.create({username, rate})
+    res.status(201).json(newUser)
+  }catch(err){
+    console.error(err.message);
+    res.status(500).json({ message: "Błąd podczas tworzenia użytkownika" });
+  }
+})
+
+
+app.post("/api/login", async (req,res) => {
+  const { username } = req.body;
+  try{
+    const user = await users.findOne({
+      where: {username}
+    })
+    if(!user){
+      return res.status(400).json({ message: "Użytkownik nie istnieje" });
+    }
+    res.json({
+      message: "Logowanie pomyślne",
+      userID: user.user_id
+    });
+  } catch (error) {
+    console.error(error.message);
+    res.status(500).json({ message: "Błąd serwera" });
+  }
+  
+})
+
+
+
+
+server.listen(PORT, () => {
+  console.log(`Serwer działa na porcie ${PORT}`);
+});
+
+
+/*
 db.run(`
   CREATE TABLE IF NOT EXISTS work_hours (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -357,3 +437,4 @@ app.get("/api/notatki/:userID/:year/:month", (req, res) => {
     res.json(rows);
   });
 });
+*/
