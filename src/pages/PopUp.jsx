@@ -36,7 +36,7 @@ const PopUp = ({ isOpen, onClose, selectedDate, setSelectedDate, fetchWorkHours,
 
     try {
       const response = await axios.get(
-        `http://localhost:5000/api/get-popup-data/${userID}/${data}`
+        `http://localhost:3000/api/get-popup-data/${userID}/${data}`
       );
       setWorkHoursData(response.data);
       setWorkHours(response.data?.godzinyPrzepracowane || 0);
@@ -49,7 +49,6 @@ const PopUp = ({ isOpen, onClose, selectedDate, setSelectedDate, fetchWorkHours,
       console.error("Błąd podczas pobierania godzin:", error);
     }
   };
-
 
 
   const changeDate = (dir) => {
@@ -80,7 +79,7 @@ const PopUp = ({ isOpen, onClose, selectedDate, setSelectedDate, fetchWorkHours,
 
       try {
         const response = await axios.put(
-          `http://localhost:5000/api/update-work-hours/${userID}/${data}`,
+          `http://localhost:3000/api/update-work-hours/${userID}/${data}`,
           {
             godzinyPrzepracowane: parsedWorkHours,
             nadgodziny50: nadgodziny50,

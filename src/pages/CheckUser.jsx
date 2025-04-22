@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import io from 'socket.io-client';
 
-const socket = io('http://localhost:3000'); // Połączenie z WebSocket na backendzie
+const socket = io('http://localhost:3000');
 
 export const CheckUser = () => {
     const [username, setusername] = useState('');
@@ -13,11 +13,10 @@ export const CheckUser = () => {
     useEffect(() => {
         socket.on('user-logged-in', (userData) => {
             console.log('Zalogowany użytkownik:', userData);
-            // Możesz wykonać dodatkowe operacje po otrzymaniu danych o zalogowanym użytkowniku
         });
 
         return () => {
-            socket.off('user-logged-in'); // Usuwamy nasłuchiwanie przy zamknięciu komponentu
+            socket.off('user-logged-in'); 
         };
     }, []);
 
@@ -31,9 +30,7 @@ export const CheckUser = () => {
 
         try {
             const response = await axios.post('http://localhost:3000/api/login', { username });
-            console.log(response.data)
             if (response.data.userID) {
-                // Zapisujemy userID w localStorage
                 localStorage.setItem('userID', response.data.userID);
                 alert('Logowanie pomyślne!');
                 
@@ -50,7 +47,6 @@ export const CheckUser = () => {
             setLoading(false);
         }
     };
-    console.log(localStorage)
     
       const register = () => {
         navigate('/register')

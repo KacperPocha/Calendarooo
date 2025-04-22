@@ -2,6 +2,9 @@ import axios from "axios";
 import React, { useEffect, useState } from "react";
 import PopUp from "./PopUp";
 import { useFetcher } from "react-router-dom";
+import io from 'socket.io-client';
+
+const socket = io('http://localhost:3000');
 
 export const CalendarComponent = ({ workHoursInfo, daysArrayFromChild, onRefreshNotes }) => {
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -11,6 +14,18 @@ export const CalendarComponent = ({ workHoursInfo, daysArrayFromChild, onRefresh
   const [isPopUpOpen, SetIsPopUpOpen] = useState(false);
   const [holidays, setHolidays] = useState([])
   const [dataDay, setDataDay] = useState([])
+  const [loading, setLoading] = useState(false)
+
+
+  useEffect(() => {
+    socket.on('update-users', (newUserData) => {
+      console.log('Nowy użytkownik:', newUserData);
+    });
+
+    return () => {
+      socket.off('update-users');
+    };
+  }, []);
 
   useEffect(() => {
     workHoursInfo(workHours)
@@ -172,23 +187,49 @@ export const CalendarComponent = ({ workHoursInfo, daysArrayFromChild, onRefresh
     const userID = localStorage.getItem("userID");
     const year = currentDate.getFullYear();
     const month = currentDate.getMonth() + 1;
-
+    setLoading(true);
+  
     try {
+      if (!userID) {
+        console.error("Brak userID w localStorage");
+        setLoading(false);
+        return;
+      }
+  
       const response = await axios.get(
-        `http://localhost:5000/api/get-calendar-data/${userID}/${year}/${month}`
+        `http://localhost:3000/api/get-calendar-data/${userID}/${year}/${month}`
       );
-      const workHoursData = response.data;
-      const formattedData = workHoursData.reduce((acc, entry) => {
-        acc[entry.data] = entry.godzinyPrzepracowane + entry.nadgodziny50 + entry.nadgodziny100;
-        return acc;
-      }, {});
-      setDataDay(workHoursData)
-      setWorkHours(formattedData);
-      onRefreshNotes()
+  
+      if (response.data && Array.isArray(response.data)) {
+        console.log(response.data); 
+  
+        const workHoursData = response.data;
+  
+        const formattedData = workHoursData.reduce((acc, entry) => {
+          const godzinyPrzepracowane = entry.godzinyPrzepracowane || 0;
+          const nadgodziny50 = entry.nadgodziny50 || 0;
+          const nadgodziny100 = entry.nadgodziny100 || 0;
+  
+          acc[entry.data] = godzinyPrzepracowane + nadgodziny50 + nadgodziny100;
+          return acc;
+        }, {});
+  
+        setDataDay(workHoursData);
+        setWorkHours(formattedData);
+  
+        onRefreshNotes();
+      } else {
+        console.error("Nieprawidłowa struktura danych:", response.data);
+        alert("Brak danych o godzinach pracy.");
+      }
     } catch (error) {
       console.error("Błąd podczas pobierania godzin:", error);
+      alert("Wystąpił błąd podczas pobierania godzin.");
+    } finally {
+      setLoading(false);
     }
   };
+  
 
   useEffect(() => {
     localStorage.setItem("date", currentDate)

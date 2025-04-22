@@ -9,19 +9,22 @@ const UserSettings = ({ isOpen, onClose, userRate }) => {
     }, [userRate])
     
     const handleSubmit = async (e) => {
-  
-          const userID = localStorage.getItem("userID");
-        
-          try {
-            const response = await axios.put(
-              `http://localhost:5000/api/updaterate/${userID}`,
-              { rate: rate }
-            );
-            onClose();
-          } catch (error) {
-            console.error("Błąd podczas zapisywania godzin:", error);
-          }
-    }
+        e.preventDefault();
+      
+        const userID = localStorage.getItem("userID");
+      
+        try {
+          const response = await axios.put(
+            `http://localhost:3000/api/updaterate/${userID}`,
+            { rate: rate }
+          );
+          console.log(response.data.message);
+          onClose();
+        } catch (error) {
+          console.error("Błąd podczas zapisywania stawki:", error);
+        }
+      };
+      
 
     if (!isOpen) return null;
 

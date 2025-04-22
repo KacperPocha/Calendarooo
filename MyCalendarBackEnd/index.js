@@ -1,11 +1,12 @@
-const express = require("express")
-const { sequelize, users, work_hours} = require("./db")
-const cors = require("cors")
-const http = require("http")
-const socketIO = require("socket.io")
+const express = require("express");
+const { Op } = require("sequelize");
+const { sequelize, users, work_hours } = require("./db");
+const cors = require("cors");
+const http = require("http");
+const socketIO = require("socket.io");
 
-const app = express()
-const server = http.createServer(app)
+const app = express();
+const server = http.createServer(app);
 const io = socketIO(server, {
   cors: {
     origin: "http://localhost:5173",
@@ -15,21 +16,21 @@ const io = socketIO(server, {
   },
 });
 
-const PORT = 3000
+const PORT = 3000;
 
-app.use(express.json())
-app.use(cors())
+app.use(express.json());
+app.use(cors());
 
 sequelize.sync().then(() => {
   console.log("Baza danych została zsynchronizowana.");
-})
+});
 
 io.on("connection", (socket) => {
   console.log("Nowe połączenie WebSocket:", socket.id);
 
   socket.on("new-note", (noteData) => {
     console.log("Nowa notatka:", noteData);
-    
+
     io.emit("update-notes", noteData);
   });
 
@@ -38,60 +39,255 @@ io.on("connection", (socket) => {
   });
 });
 
-
-
-app.get("/api/get-user-hours/:userID", async (req,res) => {
-  try{
-    const userID = req.params.userID
+app.get("/api/get-user-hours/:userID", async (req, res) => {
+  try {
+    const userID = req.params.userID;
     const work_hours = await work_hours.findAll({
-      where: {user_id: userID},
-    })
-    res.json(work_hours)
-  }catch(err) {
+      where: { user_id: userID },
+    });
+    res.json(work_hours);
+  } catch (err) {
     console.error(err.message);
     res.status(500).json({ message: "Błąd podczas pobierania danych" });
   }
-})
+});
 
-app.post("/api/add-user", async (req,res) => {
-  try{
-    const {username, rate} = req.body
-    const newUser = await users.create({username, rate})
-    res.status(201).json(newUser)
-  }catch(err){
+app.post("/api/add-user", async (req, res) => {
+  try {
+    const { username, rate } = req.body;
+    const newUser = await users.create({ username, rate });
+    res.status(201).json(newUser);
+  } catch (err) {
     console.error(err.message);
     res.status(500).json({ message: "Błąd podczas tworzenia użytkownika" });
   }
-})
+});
 
-
-app.post("/api/login", async (req,res) => {
+app.post("/api/login", async (req, res) => {
   const { username } = req.body;
-  try{
+  try {
     const user = await users.findOne({
-      where: {username}
-    })
-    if(!user){
+      where: { username },
+    });
+    if (!user) {
       return res.status(400).json({ message: "Użytkownik nie istnieje" });
     }
     res.json({
       message: "Logowanie pomyślne",
-      userID: user.user_id
+      userID: user.user_id,
     });
   } catch (error) {
     console.error(error.message);
     res.status(500).json({ message: "Błąd serwera" });
   }
-  
-})
+});
 
+app.get("/api/get-user-info/:userID", async (req, res) => {
+  const userID = req.params.userID;
+  try {
+    const user = await users.findOne({
+      where: { user_id: userID },
+    });
+    if (!user) {
+      return res.status(400).json({ message: "Użytkownik nie istnieje" });
+    }
+    res.json({
+      message: "Logowanie pomyślne",
+      userID: user.user_id,
+      username: user.username,
+      rate: user.rate,
+    });
+  } catch (error) {
+    console.error(error.message);
+    res.status(500).json({ message: "Błąd serwera" });
+  }
+});
+
+app.get("/api/get-calendar-data/:userID/:year/:month", async (req, res) => {
+  try {
+    const { userID, year, month } = req.params;
+    const monthFormatted = month.padStart(2, "0");
+
+    const workHours = await work_hours.findAll({
+      where: {
+        user_id: userID,
+        [Op.and]: [
+          sequelize.where(
+            sequelize.fn("strftime", "%Y", sequelize.col("data")),
+            year
+          ),
+          sequelize.where(
+            sequelize.fn("strftime", "%m", sequelize.col("data")),
+            monthFormatted
+          ),
+        ],
+      },
+      order: [["data", "ASC"]],
+    });
+
+    console.log("workHours:", workHours);
+    res.json(workHours);
+  } catch (error) {
+    console.error("Błąd podczas pobierania danych:", error.message);
+    res.status(500).json({ message: "Błąd serwera" });
+  }
+});
+
+app.get("/api/get-popup-data/:userID/:date", async (req, res) => {
+  const { userID, date } = req.params;
+
+  try {
+    const record = await work_hours.findOne({
+      where: {
+        user_id: userID,
+        data: sequelize.fn('DATE', sequelize.col('data')),
+      },
+    });
+
+
+
+    res.json(record);
+  } catch (error) {
+    console.error("Błąd podczas pobierania danych:", error.message);
+    res.status(500).json({ message: "Błąd serwera" });
+  }
+});
+
+app.put("/api/update-work-hours/:userID/:date", async (req, res) => {
+  const { userID, date } = req.params;
+  const {
+    godzinyPrzepracowane,
+    nadgodziny50,
+    nadgodziny100,
+    nieobecnosc,
+    noteTitle,
+    noteDescription,
+  } = req.body;
+
+  try {
+    const existingEntry = await work_hours.findOne({
+      where: {
+        user_id: userID,
+        data: date,
+      },
+    });
+
+    if (!existingEntry) {
+
+      await work_hours.create({
+        user_id: userID,
+        data: date,
+        godzinyPrzepracowane,
+        nadgodziny50,
+        nadgodziny100,
+        nieobecnosc,
+        noteTitle,
+        noteDescription,
+      });
+
+      return res.json({ message: "Godziny zostały dodane do bazy danych" });
+    }
+
+    const isChanged =
+      Number(existingEntry.godzinyPrzepracowane) !== Number(godzinyPrzepracowane) ||
+      Number(existingEntry.nadgodziny50) !== Number(nadgodziny50) ||
+      Number(existingEntry.nadgodziny100) !== Number(nadgodziny100) ||
+      existingEntry.nieobecnosc !== nieobecnosc ||
+      existingEntry.noteTitle !== noteTitle ||
+      existingEntry.noteDescription !== noteDescription;
+
+    if (!isChanged) {
+      console.log("Brak zmian w danych.");
+      return res.json({ message: "Godziny nie zostały zmienione" });
+    }
+
+    await existingEntry.update({
+      godzinyPrzepracowane,
+      nadgodziny50,
+      nadgodziny100,
+      nieobecnosc,
+      noteTitle,
+      noteDescription,
+    });
+
+    res.json({ message: "Godziny zostały zaktualizowane" });
+  } catch (error) {
+    console.error("Błąd podczas aktualizacji godzin:", error.message);
+    res.status(500).json({ message: "Błąd serwera" });
+  }
+});
+
+app.put("/api/updaterate/:userID", async (req, res) => {
+  const { userID } = req.params;
+  const { rate } = req.body;
+
+  try {
+
+    const user = await users.findOne({ where: { user_id: userID } });
+
+    if (!user) {
+   
+      await users.create({
+        user_id: userID,
+        rate: rate,
+      });
+
+      console.log(`Stawka użytkownika ${userID} została dodana`);
+      return res.status(201).json({ message: "Stawka została dodana do bazy danych" });
+    }
+
+
+    if (user.rate !== rate) {
+      await user.update({ rate: rate });
+      console.log(`Stawka użytkownika ${userID} została zaktualizowana`);
+      return res.json({ message: "Stawka została zaktualizowana" });
+    }
+
+    res.json({ message: "Stawka nie została zmieniona" });
+  } catch (error) {
+    console.error("Błąd podczas aktualizacji stawki:", error.message);
+    res.status(500).json({ message: "Błąd serwera" });
+  }
+});
+
+
+
+app.get("/api/notatki/:userID/:year/:month", async (req, res) => {
+  const { userID, year, month } = req.params;
+
+  try {
+ 
+    const notatki = await work_hours.findAll({
+      where: {
+        user_id: userID,
+        [Op.and]: [
+          sequelize.where(sequelize.fn('strftime', '%Y', sequelize.col('data')), year),
+          sequelize.where(sequelize.fn('strftime', '%m', sequelize.col('data')), month),
+        ],
+        [Op.or]: [
+          { noteTitle: { [Op.ne]: null } },
+          { noteDescription: { [Op.ne]: null } },
+        ],
+      },
+      attributes: ['data', 'noteTitle', 'noteDescription'],
+      group: ['data'],
+    });
+
+
+
+
+    res.json(notatki);
+  } catch (error) {
+    console.error("Błąd podczas pobierania danych:", error.message);
+    res.status(500).json({ message: "Błąd serwera" });
+  }
+});
 
 
 
 server.listen(PORT, () => {
   console.log(`Serwer działa na porcie ${PORT}`);
 });
-
 
 /*
 db.run(`
