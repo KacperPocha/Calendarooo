@@ -4,6 +4,7 @@ const { sequelize, users, work_hours } = require("./db");
 const cors = require("cors");
 const http = require("http");
 const socketIO = require("socket.io");
+const dayjs = require("dayjs");
 
 const app = express();
 const server = http.createServer(app);
@@ -140,11 +141,9 @@ app.get("/api/get-popup-data/:userID/:date", async (req, res) => {
     const record = await work_hours.findOne({
       where: {
         user_id: userID,
-        data: sequelize.fn('DATE', sequelize.col('data')),
+        data: date,
       },
     });
-
-
 
     res.json(record);
   } catch (error) {
@@ -155,6 +154,8 @@ app.get("/api/get-popup-data/:userID/:date", async (req, res) => {
 
 app.put("/api/update-work-hours/:userID/:date", async (req, res) => {
   const { userID, date } = req.params;
+  const formattedDate = dayjs(date).format("YYYY-MM-DD");
+  console.log(formattedDate);
   const {
     godzinyPrzepracowane,
     nadgodziny50,
@@ -168,15 +169,14 @@ app.put("/api/update-work-hours/:userID/:date", async (req, res) => {
     const existingEntry = await work_hours.findOne({
       where: {
         user_id: userID,
-        data: date,
+        data: formattedDate,
       },
     });
 
     if (!existingEntry) {
-
       await work_hours.create({
         user_id: userID,
-        data: date,
+        data: formattedDate,
         godzinyPrzepracowane,
         nadgodziny50,
         nadgodziny100,
@@ -189,7 +189,8 @@ app.put("/api/update-work-hours/:userID/:date", async (req, res) => {
     }
 
     const isChanged =
-      Number(existingEntry.godzinyPrzepracowane) !== Number(godzinyPrzepracowane) ||
+      Number(existingEntry.godzinyPrzepracowane) !==
+        Number(godzinyPrzepracowane) ||
       Number(existingEntry.nadgodziny50) !== Number(nadgodziny50) ||
       Number(existingEntry.nadgodziny100) !== Number(nadgodziny100) ||
       existingEntry.nieobecnosc !== nieobecnosc ||
@@ -222,20 +223,19 @@ app.put("/api/updaterate/:userID", async (req, res) => {
   const { rate } = req.body;
 
   try {
-
     const user = await users.findOne({ where: { user_id: userID } });
 
     if (!user) {
-   
       await users.create({
         user_id: userID,
         rate: rate,
       });
 
       console.log(`Stawka użytkownika ${userID} została dodana`);
-      return res.status(201).json({ message: "Stawka została dodana do bazy danych" });
+      return res
+        .status(201)
+        .json({ message: "Stawka została dodana do bazy danych" });
     }
-
 
     if (user.rate !== rate) {
       await user.update({ rate: rate });
@@ -250,31 +250,31 @@ app.put("/api/updaterate/:userID", async (req, res) => {
   }
 });
 
-
-
 app.get("/api/notatki/:userID/:year/:month", async (req, res) => {
   const { userID, year, month } = req.params;
 
   try {
- 
     const notatki = await work_hours.findAll({
       where: {
         user_id: userID,
         [Op.and]: [
-          sequelize.where(sequelize.fn('strftime', '%Y', sequelize.col('data')), year),
-          sequelize.where(sequelize.fn('strftime', '%m', sequelize.col('data')), month),
+          sequelize.where(
+            sequelize.fn("strftime", "%Y", sequelize.col("data")),
+            year
+          ),
+          sequelize.where(
+            sequelize.fn("strftime", "%m", sequelize.col("data")),
+            month
+          ),
         ],
         [Op.or]: [
           { noteTitle: { [Op.ne]: null } },
           { noteDescription: { [Op.ne]: null } },
         ],
       },
-      attributes: ['data', 'noteTitle', 'noteDescription'],
-      group: ['data'],
+      attributes: ["data", "noteTitle", "noteDescription"],
+      group: ["data"],
     });
-
-
-
 
     res.json(notatki);
   } catch (error) {
@@ -283,11 +283,33 @@ app.get("/api/notatki/:userID/:year/:month", async (req, res) => {
   }
 });
 
-
-
 server.listen(PORT, () => {
   console.log(`Serwer działa na porcie ${PORT}`);
 });
+
+app.delete("/api/delete-note/:userID/:date", async (req, res) => {
+  const { userID, date } = req.params;
+  try {
+    const result = await work_hours.destroy({
+      where: {
+        user_id: userID,
+        [Op.and]: [
+          sequelize.where(sequelize.fn("DATE", sequelize.col("data")), date)
+        ]
+      }
+    });
+
+    if (result === 0) {
+      return res.status(404).json({ message: "Nie znaleziono notatki." });
+    }
+
+    res.status(200).json({ message: "Notatka usunięta." });
+  } catch (error) {
+    console.error("Błąd podczas usuwania notatki:", error);
+    res.status(500).json({ message: "Błąd serwera." });
+  }
+});
+
 
 /*
 db.run(`

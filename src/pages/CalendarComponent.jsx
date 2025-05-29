@@ -143,6 +143,7 @@ export const CalendarComponent = ({ workHoursInfo, daysArrayFromChild, onRefresh
       });
     }
 
+    console.log(selectedDate)
     // Następny miesiąc
     const remainingDays = 7 - (daysArray.length % 7);
     if (remainingDays !== 7) {

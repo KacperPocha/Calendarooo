@@ -5,17 +5,16 @@ const sequelize = new Sequelize({
   storage: "./database.db",
 });
 
-
 const users = sequelize.define("user", {
   user_id: {
     type: DataTypes.INTEGER,
-    primaryKey: true,  
-    autoIncrement: true, 
+    primaryKey: true,
+    autoIncrement: true,
   },
   username: {
     type: DataTypes.STRING,
-    allowNull: false,
-    unique: true, 
+    allowNull: true,
+    unique: true,
   },
   rate: {
     type: DataTypes.INTEGER,
@@ -27,50 +26,27 @@ const work_hours = sequelize.define("work_hour", {
   user_id: {
     type: DataTypes.INTEGER,
     references: {
-      model: users,  
+      model: users,
       key: "user_id",
     },
   },
-  data: {
-    type: DataTypes.DATE,
-    allowNull: false,
-  },
-  godzinyPrzepracowane: {
-    type: DataTypes.INTEGER,
-    allowNull: false,
-  },
-  nadgodziny50: {
-    type: DataTypes.INTEGER,
-    allowNull: false,
-  },
-  nadgodziny100: {
-    type: DataTypes.INTEGER,
-    allowNull: false,
-  },
-  nieobecnosc: {
-    type: DataTypes.STRING,
-    allowNull: true,
-  },
-  stawkaBrutto: {
-    type: DataTypes.FLOAT,
-    allowNull: false,
-  },
-  noteTitle: {
-    type: DataTypes.STRING,
-    allowNull: true,
-  },
-  noteDescription: {
-    type: DataTypes.STRING,
-    allowNull: true,
-  },
+  data: DataTypes.DATEONLY,
+  godzinyPrzepracowane: DataTypes.INTEGER,
+  nadgodziny50: DataTypes.INTEGER,
+  nadgodziny100: DataTypes.INTEGER,
+  nieobecnosc: DataTypes.STRING,
+  stawkaBrutto: DataTypes.FLOAT,
+  noteTitle: DataTypes.STRING,
+  noteDescription: DataTypes.STRING,
 });
 
+users.hasMany(work_hours, { foreignKey: "user_id" });
+work_hours.belongsTo(users, { foreignKey: "user_id" });
 
-users.hasMany(work_hours, { foreignKey: "user_id" }); 
-work_hours.belongsTo(users, { foreignKey: "user_id" }); 
+// 🔧 Pełny reset (tylko raz, lub gdy testujesz)
+sequelize.sync()
 
-sequelize.sync({ alter: true }).then(() => {
-  console.log("Baza danych i modele zostały zsynchronizowane.");
-});
+// Później zmień na:
+// sequelize.sync();
 
 module.exports = { sequelize, users, work_hours };

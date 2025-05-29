@@ -9,7 +9,7 @@ const UserSettings = ({ isOpen, onClose, userRate }) => {
     }, [userRate])
     
     const handleSubmit = async (e) => {
-        e.preventDefault();
+    
       
         const userID = localStorage.getItem("userID");
       

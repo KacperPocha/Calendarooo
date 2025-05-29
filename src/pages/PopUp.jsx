@@ -1,7 +1,7 @@
 import axios from "axios";
 import React, { useEffect, useState } from "react";
 
-const PopUp = ({ isOpen, onClose, selectedDate, setSelectedDate, fetchWorkHours, notesOpen}) => {
+const PopUp = ({ isOpen, onClose, selectedDate, setSelectedDate, fetchWorkHours, notesOpen }) => {
   const [workHoursData, setWorkHoursData] = useState(null);
   const [workHours, setWorkHours] = useState(0);
   const [nadgodziny50, setnadgodziny50] = useState(0);
@@ -38,6 +38,7 @@ const PopUp = ({ isOpen, onClose, selectedDate, setSelectedDate, fetchWorkHours,
       const response = await axios.get(
         `http://localhost:3000/api/get-popup-data/${userID}/${data}`
       );
+      console.log(response)
       setWorkHoursData(response.data);
       setWorkHours(response.data?.godzinyPrzepracowane || 0);
       setnadgodziny50(response.data?.nadgodziny50 || 0);
@@ -59,14 +60,14 @@ const PopUp = ({ isOpen, onClose, selectedDate, setSelectedDate, fetchWorkHours,
 
   const handleOnSubmit = async (e) => {
     e.preventDefault();
-
+    setNotes(false)
     const parsedWorkHours = Number(workHours);
     if (isNaN(parsedWorkHours)) {
       alert("Proszę wprowadzić prawidłową liczbę godzin");
       return;
     }
 
-    // Jeśli jakakolwiek z wartości godzin została zmieniona, wysyłamy zapytanie
+
     if (
       parsedWorkHours !== workHoursData?.godzinyPrzepracowane ||
       nadgodziny50 !== workHoursData?.nadgodziny50 ||
@@ -89,8 +90,8 @@ const PopUp = ({ isOpen, onClose, selectedDate, setSelectedDate, fetchWorkHours,
             noteDescription: noteDescription
           }
         );
-        console.log("Odpowiedź z backendu:", response.data);
-        
+     
+
         setWorkHours(parsedWorkHours);
         setnadgodziny50(nadgodziny50);
         setnadgodziny100(nadgodziny100);
@@ -99,8 +100,8 @@ const PopUp = ({ isOpen, onClose, selectedDate, setSelectedDate, fetchWorkHours,
         setNoteDescription(noteDescription)
         onClose();
         fetchWorkHours();
-        
-        
+
+
       } catch (error) {
         console.error("Błąd podczas zapisywania godzin:", error);
       }
@@ -124,10 +125,21 @@ const PopUp = ({ isOpen, onClose, selectedDate, setSelectedDate, fetchWorkHours,
   }
   if (!isOpen) return null;
 
+  const Close = () => {
+    setNotes(false)
+    setWorkHoursData(0);
+    setWorkHours(0);
+    setnadgodziny50(0);
+    setnadgodziny100(0);
+    setnieobecnosc(null);
+    setNoteTitle(null);
+    setNoteDescription(null);
+  }
+
   return (
     <div
       className="fixed inset-0 flex justify-center items-center bg-black bg-opacity-50 z-50"
-      onClick={() => {onClose(); setNotes(false)}}
+      onClick={() => { Close(); onClose(); }}
     >
       <div
         className="flex flex-col bg-white rounded-lg shadow-lg p-6 w-full max-w-xl relative"
@@ -135,7 +147,7 @@ const PopUp = ({ isOpen, onClose, selectedDate, setSelectedDate, fetchWorkHours,
       >
         <div className="flex justify-end mb-4">
           <button
-            onClick={() => {onClose(); setNotes(false)}}
+            onClick={() => { Close(); onClose(); }}
             className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
           >
             Zamknij
