@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { CalendarComponent } from "./CalendarComponent";
 import { SalaryCalc } from "./SalaryCalc";
-import UserSettings from "./userSettings";
+import UserSettings from "./UserSettings";
 import { Notes } from "./Notes";
 import io from 'socket.io-client';
 

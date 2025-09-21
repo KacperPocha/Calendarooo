@@ -13,14 +13,19 @@ const users = sequelize.define("user", {
   },
   username: {
     type: DataTypes.STRING,
-    allowNull: true,
+    allowNull: false,
     unique: true,
+  },
+  password: {
+    type: DataTypes.STRING,
+    allowNull: false,
   },
   rate: {
     type: DataTypes.INTEGER,
     allowNull: true,
   },
 });
+
 
 const work_hours = sequelize.define("work_hour", {
   user_id: {
@@ -43,10 +48,8 @@ const work_hours = sequelize.define("work_hour", {
 users.hasMany(work_hours, { foreignKey: "user_id" });
 work_hours.belongsTo(users, { foreignKey: "user_id" });
 
-// 🔧 Pełny reset (tylko raz, lub gdy testujesz)
 sequelize.sync()
 
-// Później zmień na:
-// sequelize.sync();
+
 
 module.exports = { sequelize, users, work_hours };

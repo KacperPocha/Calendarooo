@@ -12,8 +12,10 @@
   "dependencies": {
     "@tanstack/react-query": "^5.59.16",
     "axios": "^1.7.7",
+    "bcrypt": "^6.0.0",
     "cors": "^2.8.5",
     "dayjs": "^1.11.13",
+    "dotenv": "^17.2.2",
     "jsonwebtoken": "^8.5.1",
     "jwt-decode": "^3.1.2",
     "navigate": "^0.3.6",
@@ -41,5 +43,18 @@
     "postcss": "^8.4.47",
     "tailwindcss": "^3.4.14",
     "vite": "^5.4.8"
-  }
+  },
+  "description": "**Calendaroo** to aplikacja do zarządzania czasem i harmonogramami, stworzona w oparciu o React na frontendzie i Node.js z SQLite na backendzie. Aplikacja umożliwia planowanie wydarzeń, obliczanie przepracowanych godzin oraz wynagrodzenia.",
+  "main": "eslint.config.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/KacperPocha/Calendarooo.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/KacperPocha/Calendarooo/issues"
+  },
+  "homepage": "https://github.com/KacperPocha/Calendarooo#readme"
 }

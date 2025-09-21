@@ -5,6 +5,12 @@ const cors = require("cors");
 const http = require("http");
 const socketIO = require("socket.io");
 const dayjs = require("dayjs");
+const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
+require('dotenv').config()
+const PORT = process.env.PORT
+const JWT_SECRET = process.env.JWT_SECRET
+const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*]).{8,}$/;
 
 const app = express();
 const server = http.createServer(app);
@@ -17,7 +23,7 @@ const io = socketIO(server, {
   },
 });
 
-const PORT = 3000;
+console.log(JWT_SECRET)
 
 app.use(express.json());
 app.use(cors());
@@ -40,6 +46,74 @@ io.on("connection", (socket) => {
   });
 });
 
+
+app.post('/api/register', async (req, res) => {
+  try {
+    const { username, password, rate} = req.body;
+    if (!username || !password) return res.status(400).json({message: 'Login i hasło są wymagane!'});
+
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*]).{8,}$/;
+    if (!passwordRegex.test(password)) {
+      return res.status(400).json({
+        message: 'Hasło musi mieć min. 8 znaków, 1 dużą literę, 1 małą literę, 1 cyfrę i 1 znak specjalny!'
+      });
+    }
+
+    const exists = await users.findOne({where: {username}});
+    if (exists) return res.status(400).json({message: 'Taki użytkownik już istnieje'});
+
+    const hash = await bcrypt.hash(password, 10);
+    const newUser = await users.create({ username, password: hash, rate: rate || 0});
+
+    return res.status(201).json({message: 'Utworzono konto', userID: newUser.user_id});
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({message: 'Błąd serwera'});
+  }
+})
+
+app.post('/api/login', async (req,res) => {
+  try{ 
+    const { username, password} = req.body;
+    if(!username || !password) return res.status(400).json({message: 'Login i hasło są wymagane'});
+
+    const user = await users.findOne({ where: {username}});
+    if(!user) return res.status(400).json({message: 'Nieprawidłowy login lub użytkownik nie istnieje'});
+
+    const ok = await bcrypt.compare(password, user.password);
+    if(!ok) return res.status(400).json({message: 'Nieprawidłowe hasło'});
+
+    const token = jwt.sign({ userID: user.user_id, username: user.username}, JWT_SECRET, {expiresIn: '1h'});
+    return res.json({message: 'Zalogowano', token, userID: user.user_id, username: user.username});
+  } catch (err) {
+    console.error(err);
+    return res.status(201).json({ message: 'Błąd serwera'});
+  }
+})
+
+
+function authenticateToken(req, res, next) {
+  const authHeader = req.headers['authorization']; // małe litery
+  if (!authHeader) return res.status(401).json({ message: 'Brak tokenu' });
+
+  const token = authHeader.split(' ')[1];
+  if (!token) return res.status(401).json({ message: 'Brak tokenu' });
+
+  jwt.verify(token, JWT_SECRET, (err, user) => {
+    if (err) return res.status(403).json({ message: 'Nieprawidłowy token!' });
+    req.user = user; 
+    next();
+  });
+}
+
+app.get('/api/profile', authenticateToken, async (req, res) => {
+  const user = await users.findOne({ where: { user_id: req.user.userID } });
+  if (!user) return res.status(404).json({ message: 'Nie znaleziono użytkownika' });
+  res.json({ userID: user.user_id, username: user.username, rate: user.rate });
+});
+
+
+
 app.get("/api/get-user-hours/:userID", async (req, res) => {
   try {
     const userID = req.params.userID;
@@ -53,35 +127,7 @@ app.get("/api/get-user-hours/:userID", async (req, res) => {
   }
 });
 
-app.post("/api/add-user", async (req, res) => {
-  try {
-    const { username, rate } = req.body;
-    const newUser = await users.create({ username, rate });
-    res.status(201).json(newUser);
-  } catch (err) {
-    console.error(err.message);
-    res.status(500).json({ message: "Błąd podczas tworzenia użytkownika" });
-  }
-});
 
-app.post("/api/login", async (req, res) => {
-  const { username } = req.body;
-  try {
-    const user = await users.findOne({
-      where: { username },
-    });
-    if (!user) {
-      return res.status(400).json({ message: "Użytkownik nie istnieje" });
-    }
-    res.json({
-      message: "Logowanie pomyślne",
-      userID: user.user_id,
-    });
-  } catch (error) {
-    console.error(error.message);
-    res.status(500).json({ message: "Błąd serwera" });
-  }
-});
 
 app.get("/api/get-user-info/:userID", async (req, res) => {
   const userID = req.params.userID;
@@ -565,19 +611,6 @@ app.get("/userslist", (req, res) => {
   });
 });
 
-app.delete("/users/:id", (req, res) => {
-  const userID = req.params.id;
-  const query = "DELETE FROM users WHERE id= ?";
-
-  db.run(query, userID, function (err) {
-    if (err) {
-      console.log(err.message);
-      res.status(500).json({ message: "Bład podczas usuwania" });
-      return;
-    }
-    res.json({ message: "Użytkownik usunięty" });
-  });
-});
 
 app.put("/api/updaterate/:userID", (req, res) => {
   const userID = req.params.userID;

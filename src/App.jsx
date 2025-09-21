@@ -1,9 +1,8 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
-import { CheckUser } from "./pages/CheckUser"
-import { AddUser } from "./pages/AddUser"
+import { Register } from "./pages/Register"
 import { Calendar } from './pages/Calendar'
-import { DeleteUser } from './pages/DeleteUser'
 import { CalendarComponent } from './pages/CalendarComponent'
+import { Login } from './pages/Login'
 
 
 function App() {
@@ -12,10 +11,9 @@ function App() {
     <>
     <Router>
       <Routes>
-        <Route path="/" element={<CheckUser />} />
-        <Route path="/register" element={<AddUser />} />
+        <Route path="/" element={<Login />} />
+        <Route path="/register" element={<Register />} />
         <Route path="/calendar" element={<Calendar />} />
-        <Route path="/deleteuser" element={<DeleteUser />} />
         <Route path="/comp" element={<CalendarComponent />} />
       </Routes>
     </Router>
