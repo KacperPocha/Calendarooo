@@ -450,26 +450,27 @@ server.listen(PORT, () => {
   console.log(`Serwer działa na porcie ${PORT}`);
 });
 
-app.delete("/api/delete-note/:userID/:date", async (req, res) => {
+app.put("/api/delete-note/:userID/:date", async (req, res) => {
   const { userID, date } = req.params;
+
   try {
-    const result = await work_hours.destroy({
-      where: {
-        user_id: userID,
-        [Op.and]: [
-          sequelize.where(sequelize.fn("DATE", sequelize.col("data")), date),
-        ],
-      },
+    const record = await work_hours.findOne({
+      where: { user_id: userID, data: date }
     });
 
-    if (result === 0) {
+    if (!record) {
       return res.status(404).json({ message: "Nie znaleziono notatki." });
     }
 
-    res.status(200).json({ message: "Notatka usunięta." });
-  } catch (error) {
-    console.error("Błąd podczas usuwania notatki:", error);
-    res.status(500).json({ message: "Błąd serwera." });
+    await record.update({
+      noteTitle: null,
+      noteDescription: null
+    });
+
+    res.json({ message: "Notatka została usunięta" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Błąd serwera" });
   }
 });
 

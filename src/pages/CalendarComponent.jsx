@@ -1,12 +1,12 @@
 import axios from "axios";
-import React, { useEffect, useState } from "react";
+import React, { forwardRef, useImperativeHandle, useEffect, useState } from "react";
 import PopUp from "./PopUp";
 import { useFetcher } from "react-router-dom";
 import io from 'socket.io-client';
 
 const socket = io('http://localhost:3000');
 
-export const CalendarComponent = ({ workHoursInfo, daysArrayFromChild, onRefreshNotes }) => {
+export const CalendarComponent = forwardRef(({ workHoursInfo, daysArrayFromChild, onRefreshNotes }, ref) => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [workHours, setWorkHours] = useState([]);
   const [selectedDate, setSelectedDate] = useState("");
@@ -15,6 +15,18 @@ export const CalendarComponent = ({ workHoursInfo, daysArrayFromChild, onRefresh
   const [holidays, setHolidays] = useState([])
   const [dataDay, setDataDay] = useState([])
   const [loading, setLoading] = useState(false)
+
+  useEffect(() => {
+    const handleRefresh = () => {
+        fetchWorkHours();
+    };
+
+    window.addEventListener('refreshCalendar', handleRefresh);
+    
+    return () => {
+        window.removeEventListener('refreshCalendar', handleRefresh);
+    };
+}, []); 
 
 
   useEffect(() => {
@@ -143,7 +155,6 @@ export const CalendarComponent = ({ workHoursInfo, daysArrayFromChild, onRefresh
       });
     }
 
-    console.log(selectedDate)
     // Następny miesiąc
     const remainingDays = 7 - (daysArray.length % 7);
     if (remainingDays !== 7) {
@@ -188,36 +199,37 @@ export const CalendarComponent = ({ workHoursInfo, daysArrayFromChild, onRefresh
     const userID = localStorage.getItem("userID");
     const year = currentDate.getFullYear();
     const month = currentDate.getMonth() + 1;
+    onRefreshNotes && onRefreshNotes();
     setLoading(true);
-  
+
     try {
       if (!userID) {
         console.error("Brak userID w localStorage");
         setLoading(false);
         return;
       }
-  
+
       const response = await axios.get(
         `http://localhost:3000/api/get-calendar-data/${userID}/${year}/${month}`
       );
-  
+
       if (response.data && Array.isArray(response.data)) {
-        console.log(response.data); 
-  
+        console.log(response.data);
+
         const workHoursData = response.data;
-  
+
         const formattedData = workHoursData.reduce((acc, entry) => {
           const godzinyPrzepracowane = entry.godzinyPrzepracowane || 0;
           const nadgodziny50 = entry.nadgodziny50 || 0;
           const nadgodziny100 = entry.nadgodziny100 || 0;
-  
+
           acc[entry.data] = godzinyPrzepracowane + nadgodziny50 + nadgodziny100;
           return acc;
         }, {});
-  
+
         setDataDay(workHoursData);
         setWorkHours(formattedData);
-  
+
         onRefreshNotes();
       } else {
         console.error("Nieprawidłowa struktura danych:", response.data);
@@ -230,22 +242,28 @@ export const CalendarComponent = ({ workHoursInfo, daysArrayFromChild, onRefresh
       setLoading(false);
     }
   };
-  
+
 
   useEffect(() => {
     localStorage.setItem("date", currentDate)
     fetchWorkHours();
   }, [currentDate]);
 
-  const handleDayClick = (dayObj) => {
+  const handleDayClick = async (dayObj) => {
     if (!dayObj.isOtherMonth) {
       const dayKey = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, "0")}-${String(dayObj.day).padStart(2, "0")}`;
+
+      await fetchWorkHours();
       setSelectedDate(dayKey);
       SetIsPopUpOpen(true);
     }
   };
 
-
+  useImperativeHandle(ref, () => ({
+    fetchWorkHours: async () => {
+      await fetchWorkHours();
+    }
+  }));
 
 
   return (
@@ -301,7 +319,7 @@ export const CalendarComponent = ({ workHoursInfo, daysArrayFromChild, onRefresh
                   : "bg-gray-100 hover:bg-blue-100"
                   } ${isHoliday(dayObj.day) && !dayObj.isOtherMonth ? "bg-red-200" : ""}`}
               >
-                {/* Umieszczenie liczby dnia w prawym górnym rogu */}
+
                 <span className="absolute top-1 right-2 text-lg font-bold">
                   {dayObj.day}
                 </span>
@@ -311,17 +329,17 @@ export const CalendarComponent = ({ workHoursInfo, daysArrayFromChild, onRefresh
                   </span>
                 )}
 
-                {/* Wyświetlenie godzin */}
+
                 {!dayObj.isOtherMonth && (
-                  <div className="flex items-center justify-center h-full cursor-pointer mb-4">
+                  <div className="flex items-center justify-center h-full cursor-pointer mb-2">
                     <span className="text-2xl font-medium">
                       {workHours[dayKey] ? `${workHours[dayKey]}h` : ""}
                     </span>
                   </div>
                 )}
                 {dayObj.noteTitle &&
-                  <div className="absolute top-16 bg-yellow-300 rounded rounded-2xl pl-2 pr-2 ml-1 max-w-28 text-sm truncate">
-                    <span>{dayObj.noteTitle}</span>
+                  <div className="absolute top-16 mt-3 bg-yellow-300 rounded rounded-2xl pl-2 pr-2 ml-1 max-w-28 text-sm truncate">
+                    <span>Notatka!</span>
                   </div>
                 }
 
@@ -332,4 +350,4 @@ export const CalendarComponent = ({ workHoursInfo, daysArrayFromChild, onRefresh
       </div>
     </div>
   );
-};
+});

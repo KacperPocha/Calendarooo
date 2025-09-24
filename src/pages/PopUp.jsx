@@ -7,12 +7,10 @@ const PopUp = ({ isOpen, onClose, selectedDate, setSelectedDate, fetchWorkHours,
   const [nadgodziny50, setnadgodziny50] = useState(0);
   const [nadgodziny100, setnadgodziny100] = useState(0);
   const [nieobecnosc, setnieobecnosc] = useState(null);
-  const [selectDisabled, setSelectDisabled] = useState(false)
-  const [notes, setNotes] = useState(false)
-  const [noteTitle, setNoteTitle] = useState(null)
-  const [noteDescription, setNoteDescription] = useState(null)
-
-
+  const [selectDisabled, setSelectDisabled] = useState(false);
+  const [notes, setNotes] = useState(false);
+  const [noteTitle, setNoteTitle] = useState(null);
+  const [noteDescription, setNoteDescription] = useState(null);
 
   const date = new Date(selectedDate);
   const month = date.getMonth() + 1;
@@ -20,16 +18,30 @@ const PopUp = ({ isOpen, onClose, selectedDate, setSelectedDate, fetchWorkHours,
   const year = date.getFullYear();
   const data = `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
 
+
   useEffect(() => {
-    setNotes(notesOpen)
-  }, [notesOpen])
+    const handleRefreshPopup = () => {
+        if (selectedDate) {
+            fetchWorkHoursData(); 
+        }
+    };
+
+    window.addEventListener('refreshCalendar', handleRefreshPopup);
+    
+    return () => {
+        window.removeEventListener('refreshCalendar', handleRefreshPopup);
+    };
+}, [selectedDate]);
+
+  useEffect(() => {
+    setNotes(notesOpen);
+  }, [notesOpen]);
 
   useEffect(() => {
     if (selectedDate) {
       fetchWorkHoursData();
     }
   }, [selectedDate]);
-
 
   const fetchWorkHoursData = async () => {
     const userID = localStorage.getItem("userID");
@@ -38,7 +50,6 @@ const PopUp = ({ isOpen, onClose, selectedDate, setSelectedDate, fetchWorkHours,
       const response = await axios.get(
         `http://localhost:3000/api/get-popup-data/${userID}/${data}`
       );
-      console.log(response)
       setWorkHoursData(response.data);
       setWorkHours(response.data?.godzinyPrzepracowane || 0);
       setnadgodziny50(response.data?.nadgodziny50 || 0);
@@ -51,7 +62,6 @@ const PopUp = ({ isOpen, onClose, selectedDate, setSelectedDate, fetchWorkHours,
     }
   };
 
-
   const changeDate = (dir) => {
     const newDate = new Date(selectedDate);
     newDate.setDate(newDate.getDate() + dir);
@@ -60,13 +70,12 @@ const PopUp = ({ isOpen, onClose, selectedDate, setSelectedDate, fetchWorkHours,
 
   const handleOnSubmit = async (e) => {
     e.preventDefault();
-    setNotes(false)
+    setNotes(false);
     const parsedWorkHours = Number(workHours);
     if (isNaN(parsedWorkHours)) {
       alert("Proszę wprowadzić prawidłową liczbę godzin");
       return;
     }
-
 
     if (
       parsedWorkHours !== workHoursData?.godzinyPrzepracowane ||
@@ -79,7 +88,7 @@ const PopUp = ({ isOpen, onClose, selectedDate, setSelectedDate, fetchWorkHours,
       const userID = localStorage.getItem("userID");
 
       try {
-        const response = await axios.put(
+        await axios.put(
           `http://localhost:3000/api/update-work-hours/${userID}/${data}`,
           {
             godzinyPrzepracowane: parsedWorkHours,
@@ -90,18 +99,16 @@ const PopUp = ({ isOpen, onClose, selectedDate, setSelectedDate, fetchWorkHours,
             noteDescription: noteDescription
           }
         );
-     
 
         setWorkHours(parsedWorkHours);
         setnadgodziny50(nadgodziny50);
         setnadgodziny100(nadgodziny100);
         setnieobecnosc(nieobecnosc);
-        setNoteTitle(noteTitle)
-        setNoteDescription(noteDescription)
+        setNoteTitle(noteTitle);
+        setNoteDescription(noteDescription);
+        window.dispatchEvent(new CustomEvent('refreshCalendar'));
         onClose();
         fetchWorkHours();
-
-
       } catch (error) {
         console.error("Błąd podczas zapisywania godzin:", error);
       }
@@ -115,18 +122,19 @@ const PopUp = ({ isOpen, onClose, selectedDate, setSelectedDate, fetchWorkHours,
     if (workHours === 0 && nadgodziny50 === 0 && nadgodziny100 === 0) {
       setSelectDisabled(false);
     } else {
-      setnieobecnosc("")
+      setnieobecnosc("");
       setSelectDisabled(true);
     }
   }, [workHours, nadgodziny50, nadgodziny100]);
 
   const handleBlur = (setter, value) => {
-    setter(value === "" ? 0 : value)
-  }
+    setter(value === "" ? 0 : value);
+  };
+
   if (!isOpen) return null;
 
   const Close = () => {
-    setNotes(false)
+    setNotes(false);
     setWorkHoursData(0);
     setWorkHours(0);
     setnadgodziny50(0);
@@ -134,15 +142,15 @@ const PopUp = ({ isOpen, onClose, selectedDate, setSelectedDate, fetchWorkHours,
     setnieobecnosc(null);
     setNoteTitle(null);
     setNoteDescription(null);
-  }
+  };
 
   return (
     <div
-      className="fixed inset-0 flex justify-center items-center bg-black bg-opacity-50 z-50"
+      className="fixed inset-0 flex justify-center items-center bg-black bg-opacity-50 z-50 overflow-auto"
       onClick={() => { Close(); onClose(); }}
     >
       <div
-        className="flex flex-col bg-white rounded-lg shadow-lg p-6 w-full max-w-xl relative"
+        className="flex flex-col bg-white rounded-lg shadow-lg p-6 w-full max-w-xl max-h-[90vh] overflow-auto relative"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex justify-end mb-4">
@@ -158,8 +166,7 @@ const PopUp = ({ isOpen, onClose, selectedDate, setSelectedDate, fetchWorkHours,
             <div>
               <label className="block mb-2 text-sm text-slate-600">Data:</label>
               <input
-                className="w-full bg-transparent placeholder:text-slate-400 text-slate-700 text-sm border border-slate-200 rounded-md px-3 py-2 transition duration-300 ease focus:outline-none focus:border-slate-400 hover:border-slate-300 shadow-sm"
-                placeholder="Type here..."
+                className="w-full bg-transparent placeholder:text-slate-400 text-slate-700 text-sm border border-slate-200 rounded-md px-3 py-2"
                 type="text"
                 value={data}
                 disabled
@@ -168,8 +175,7 @@ const PopUp = ({ isOpen, onClose, selectedDate, setSelectedDate, fetchWorkHours,
             <div>
               <label className="block mb-2 text-sm text-slate-600">Ilość godzin zwykłych:</label>
               <input
-                className="w-full bg-transparent placeholder:text-slate-400 text-slate-700 text-sm border border-slate-200 rounded-md px-3 py-2 transition duration-300 ease focus:outline-none focus:border-slate-400 hover:border-slate-300 shadow-sm"
-                placeholder="Type here..."
+                className="w-full bg-transparent placeholder:text-slate-400 text-slate-700 text-sm border border-slate-200 rounded-md px-3 py-2"
                 type="number"
                 value={workHours === null ? 0 : workHours}
                 onChange={(e) => setWorkHours(e.target.value)}
@@ -179,8 +185,7 @@ const PopUp = ({ isOpen, onClose, selectedDate, setSelectedDate, fetchWorkHours,
             <div>
               <label className="block mb-2 text-sm text-slate-600">Ilość nadgodzin 50%:</label>
               <input
-                className="w-full bg-transparent placeholder:text-slate-400 text-slate-700 text-sm border border-slate-200 rounded-md px-3 py-2 transition duration-300 ease focus:outline-none focus:border-slate-400 hover:border-slate-300 shadow-sm"
-                placeholder="Type here..."
+                className="w-full bg-transparent placeholder:text-slate-400 text-slate-700 text-sm border border-slate-200 rounded-md px-3 py-2"
                 type="number"
                 value={nadgodziny50}
                 onChange={(e) => setnadgodziny50(e.target.value)}
@@ -190,8 +195,7 @@ const PopUp = ({ isOpen, onClose, selectedDate, setSelectedDate, fetchWorkHours,
             <div>
               <label className="block mb-2 text-sm text-slate-600">Ilość nadgodzin 100%:</label>
               <input
-                className="w-full bg-transparent placeholder:text-slate-400 text-slate-700 text-sm border border-slate-200 rounded-md px-3 py-2 transition duration-300 ease focus:outline-none focus:border-slate-400 hover:border-slate-300 shadow-sm"
-                placeholder="Type here..."
+                className="w-full bg-transparent placeholder:text-slate-400 text-slate-700 text-sm border border-slate-200 rounded-md px-3 py-2"
                 type="number"
                 value={nadgodziny100}
                 onChange={(e) => setnadgodziny100(e.target.value)}
@@ -199,13 +203,14 @@ const PopUp = ({ isOpen, onClose, selectedDate, setSelectedDate, fetchWorkHours,
               />
             </div>
           </div>
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
             <div>
               <label className="block mb-2 text-sm text-slate-600">
                 Powód nieobecności/ wcześniejszego wyjścia:
               </label>
               <select
-                className="w-full bg-transparent placeholder:text-slate-400 text-slate-700 text-sm border border-slate-200 rounded-md px-3 py-2 transition duration-300 ease focus:outline-none focus:border-slate-400 hover:border-slate-300 shadow-sm"
+                className="w-full bg-transparent placeholder:text-slate-400 text-slate-700 text-sm border border-slate-200 rounded-md px-3 py-2"
                 value={nieobecnosc}
                 onChange={(e) => setnieobecnosc(e.target.value)}
                 disabled={selectDisabled}
@@ -241,8 +246,7 @@ const PopUp = ({ isOpen, onClose, selectedDate, setSelectedDate, fetchWorkHours,
               <div className="w-full">
                 <label className="block mb-2 text-sm text-slate-600">Tytuł notatki:</label>
                 <input
-                  className="w-full bg-transparent placeholder:text-slate-400 text-slate-700 text-sm border border-slate-200 rounded-md px-3 py-2 transition duration-300 ease focus:outline-none focus:border-slate-400 hover:border-slate-300 shadow-sm"
-                  placeholder="Type here..."
+                  className="w-full bg-transparent placeholder:text-slate-400 text-slate-700 text-sm border border-slate-200 rounded-md px-3 py-2"
                   type="text"
                   value={noteTitle || ""}
                   onChange={(e) => setNoteTitle(e.target.value)}
@@ -251,9 +255,7 @@ const PopUp = ({ isOpen, onClose, selectedDate, setSelectedDate, fetchWorkHours,
               <div>
                 <label className="block mb-2 text-sm text-slate-600">Treść notatki:</label>
                 <textarea
-                  className="w-full bg-transparent placeholder:text-slate-400 text-slate-700 text-sm border border-slate-200 rounded-md px-3 py-2 transition duration-300 ease focus:outline-none focus:border-slate-400 hover:border-slate-300 shadow-sm"
-                  placeholder="Type here..."
-                  type="textarea"
+                  className="w-full bg-transparent placeholder:text-slate-400 text-slate-700 text-sm border border-slate-200 rounded-md px-3 py-2"
                   value={noteDescription || ""}
                   onChange={(e) => setNoteDescription(e.target.value)}
                 />
@@ -288,7 +290,6 @@ const PopUp = ({ isOpen, onClose, selectedDate, setSelectedDate, fetchWorkHours,
       </div>
     </div>
   );
-
 };
 
 export default PopUp;
