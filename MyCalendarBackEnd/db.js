@@ -11,6 +11,14 @@ const users = sequelize.define("user", {
     primaryKey: true,
     autoIncrement: true,
   },
+   email: {
+    type: DataTypes.STRING,
+    allowNull: false,
+    unique: true,
+    validate: {
+      isEmail: true,
+    },
+  },
   username: {
     type: DataTypes.STRING,
     allowNull: false,
@@ -24,8 +32,11 @@ const users = sequelize.define("user", {
     type: DataTypes.INTEGER,
     allowNull: true,
   },
+  verified: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: false,
+  },
 });
-
 
 const work_hours = sequelize.define("work_hour", {
   user_id: {
@@ -48,8 +59,6 @@ const work_hours = sequelize.define("work_hour", {
 users.hasMany(work_hours, { foreignKey: "user_id" });
 work_hours.belongsTo(users, { foreignKey: "user_id" });
 
-sequelize.sync()
-
-
+sequelize.sync();
 
 module.exports = { sequelize, users, work_hours };

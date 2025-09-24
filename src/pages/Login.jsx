@@ -56,7 +56,11 @@ export const Login = () => {
             }
         } catch (error) {
             console.error(error);
-            alert('Błąd logowania. Sprawdź login i hasło.');
+            if (error.response?.data?.message) {
+                alert(error.response.data.message); // pokaże np. "Konto nie jest zweryfikowane przez email!"
+            } else {
+                alert('Błąd logowania. Sprawdź login i hasło.');
+            }
         } finally {
             setLoading(false);
         }
@@ -67,37 +71,42 @@ export const Login = () => {
     }
 
 
+
     return (
         <div className='w-screen h-screen'>
             <div className='grid w-screen h-screen place-content-center'>
                 <button className='border-4 mb-4 text-center p-2' onClick={register}>Rejestracja</button>
-                <form onSubmit={handleSubmit} >
-                    <div className='border-4 grid w-72 h-56'>
-                        <input
-                            type="text"
-                            className='border-2 m-2 text-center'
-                            placeholder='Login'
-                            value={username}
-                            onChange={(e) => setUsername(e.target.value)}
-                        />
-                        <input
-                            type="password"
-                            className='border-2 m-2 text-center'
-                            placeholder='Hasło'
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                        />
+                <div className='border-4 grid w-72 h-56'>
+                    <form onSubmit={handleSubmit} >
+                        <div className='grid'>
+                            <input
+                                type="text"
+                                className='border-2 m-2 text-center'
+                                placeholder='Login'
+                                value={username}
+                                onChange={(e) => setUsername(e.target.value)}
+                            />
+                            <input
+                                type="password"
+                                className='border-2 m-2 text-center'
+                                placeholder='Hasło'
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                            />
 
-                        <button
-                        type="submit"
-                        disabled={loading}
-                        className="border-2 m-2"
-                    >
-                        {loading ? 'Logowanie...' : 'Zaloguj'}
-                    </button>
-                    </div>
+                            <button
+                                type="submit"
+                                disabled={loading}
+                                className="border-2 m-2"
+                            >
+                                {loading ? 'Logowanie...' : 'Zaloguj'}
+                            </button>
+                        </div>
 
-                </form>
+                    </form>
+                    <button onClick={() => navigate('/forgot-password')}>Zapomniałeś hasło?</button>
+                </div>
+
             </div>
 
         </div>

@@ -6,6 +6,7 @@ import io from 'socket.io-client';
 const socket = io('http://localhost:3000');
 
 export const Register = () => {
+    const [email, setEmail] = useState('')
     const [username, setUsername] = useState('')
     const [password, setPassword] = useState('')
     const [loading, setLoading] = useState(false)
@@ -31,14 +32,16 @@ export const Register = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        if (!username || !password) {
-            alert('Wprowadź nazwę użytkownika i hasło!');
+
+
+        if (!username || !email || !password) {
+            alert('Wprowadź email, nazwę użytkownika i hasło!');
             return;
         }
 
         if (!passwordRegex.test(password)) {
             alert(
-                "Hasło musi mieć min. 8 znaków, 1 dużą literę, 1 małą literę, 1 cyfrę i 1 znak specjalny!"
+                'Hasło musi mieć min. 8 znaków, 1 dużą literę, 1 małą literę, 1 cyfrę i 1 znak specjalny!'
             );
             return;
         }
@@ -47,18 +50,23 @@ export const Register = () => {
 
         try {
             const response = await axios.post('http://localhost:3000/api/register', {
+                email,
                 username,
                 password,
             });
 
-            if (response.data.userID) {
-                alert('Użytkownik został dodany!');
-                socket.emit('new-user', { userID: response.data.userID, username });
+            if (response.data.message) {
+                alert(response.data.message);
+                socket.emit('new-user', { username, email });
                 navigate('/');
             }
         } catch (error) {
             console.error(error);
-            alert('Wystąpił błąd podczas dodawania użytkownika.');
+            if (error.response?.data?.message) {
+                alert(error.response.data.message);
+            } else {
+                alert('Wystąpił błąd podczas rejestracji.');
+            }
         } finally {
             setLoading(false);
         }
@@ -74,6 +82,13 @@ export const Register = () => {
             <button className='border-4 mb-4 text-center p-2' onClick={goToLogin}>Logowanie</button>
             <form onSubmit={handleSubmit}>
                 <div className="border-4 grid w-72 h-64 p-4">
+                    <input
+                        type="email"
+                        placeholder="E-mail"
+                        className="border-2 p-2 text-center"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                    />
                     <input
                         type="text"
                         placeholder="Nazwa użytkownika"
