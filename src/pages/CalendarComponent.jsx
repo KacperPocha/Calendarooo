@@ -324,7 +324,7 @@ export const CalendarComponent = forwardRef(({ workHoursInfo, daysArrayFromChild
                   {dayObj.day}
                 </span>
                 {isHoliday(dayObj.day) && !dayObj.isOtherMonth && (
-                  <span className="absolute bottom-1 left-2 text-xs text-red-600">
+                  <span className="absolute bottom-1 left-1 text-xs text-red-600">
                     {holidays.find(holiday => holiday.date === dayKey).localName}
                   </span>
                 )}

@@ -7,6 +7,7 @@ import { SalaryCalc } from "./SalaryCalc";
 import UserSettings from "./UserSettings";
 import { Notes } from "./Notes";
 import io from 'socket.io-client';
+import { Menu } from "./Menu";
 
 const socket = io('http://localhost:3000');
 
@@ -62,9 +63,10 @@ export const Calendar = () => {
         );
         if (response.data && response.data) {
           setUser(response.data);
-          socket.emit('user-logged-in', { 
-            userID: userId, 
-            username: response.data.username });
+          socket.emit('user-logged-in', {
+            userID: userId,
+            username: response.data.username
+          });
         } else {
           alert("Błąd logowania: Brak ID");
         }
@@ -80,43 +82,39 @@ export const Calendar = () => {
       getUser();
     }
   }, [userId]);
-  console.log(user)
+
+
   return (
     <div className="w-full">
-      <UserSettings
-        isOpen={isPopUpOpen}
-        onClose={() => SetIsPopUpOpen(false)}
-        userRate={user?.rate || 0}
-      />
-      <div className="row flex justify-end items-center mt-2 ml-2 mb-8">
-        <button className="mr-4" onClick={() => SetIsPopUpOpen(true)}>⚙️</button>
-        <button
-          onClick={() => {
+      <div className="flex w-full">
+        <Menu
+          onSettingsClick={() => SetIsPopUpOpen(true)}
+          onLogoutClick={() => {
             navigate("/");
             localStorage.clear();
           }}
-          className="text-xl"
-        >
-          🚪
-        </button>
-        <div>
-          <p className="text-md mr-2 ml-4 cursor-default">
-            Witaj, {user?.username}
-          </p>
-        </div>
+          user={user}
+        />
+
+        <UserSettings
+          isOpen={isPopUpOpen}
+          onClose={() => SetIsPopUpOpen(false)}
+          userRate={user?.rate || 0}
+        />
+
       </div>
-      <div className="grid grid-cols-12 w-full">
-        <div className=" col-span-3">
+      <div className="grid grid-cols-13 w-full">
+        <div className="col-start-1 col-end-2 col-span-2">
           <Notes
             ref={notesRef} />
         </div>
-        <div className="col-span-6 col-start-4">
+        <div className="col-span-8 col-start-2 col-end-12">
           <CalendarComponent workHoursInfo={getData}
             daysArrayFromChild={handleDaysArrayFromChild}
             onRefreshNotes={() => notesRef.current?.fetchWorkHours()}
           />
         </div>
-        <div className="col-span-3">
+        <div className="col-start-12 col-span-2">
           <SalaryCalc workHoursInfo={hours}
             userRate={user?.rate || 0}
             daysArray={daysArrayFromChild}

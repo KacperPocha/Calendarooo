@@ -1,0 +1,160 @@
+const express = require("express");
+const router = express.Router();
+const dayjs = require("dayjs");
+const { Op } = require("sequelize");
+const { users, work_hours, sequelize } = require("../db");
+const authenticateToken = require("../utils/authMiddleware");
+
+
+router.get("/profile", authenticateToken, async (req, res) => {
+  const user = await users.findOne({ where: { user_id: req.user.userID } });
+  if (!user) return res.status(404).json({ message: "Nie znaleziono użytkownika" });
+  res.json({ userID: user.user_id, username: user.username, rate: user.rate });
+});
+
+
+router.get("/get-user-hours/:userID", async (req, res) => {
+  try {
+    const userID = req.params.userID;
+    const hours = await work_hours.findAll({ where: { user_id: userID } });
+    res.json(hours);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Błąd podczas pobierania danych" });
+  }
+});
+
+
+router.get("/get-user-info/:userID", async (req, res) => {
+  try {
+    const userID = req.params.userID;
+    const user = await users.findOne({ where: { user_id: userID } });
+    if (!user) return res.status(400).json({ message: "Użytkownik nie istnieje" });
+    res.json({ userID: user.user_id, username: user.username, rate: user.rate });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Błąd serwera" });
+  }
+});
+
+
+router.get("/get-calendar-data/:userID/:year/:month", async (req, res) => {
+  try {
+    const { userID, year, month } = req.params;
+    const monthFormatted = month.padStart(2, "0");
+
+    const workHours = await work_hours.findAll({
+      where: {
+        user_id: userID,
+        [Op.and]: [
+          sequelize.where(sequelize.fn("strftime", "%Y", sequelize.col("data")), year),
+          sequelize.where(sequelize.fn("strftime", "%m", sequelize.col("data")), monthFormatted),
+        ],
+      },
+      order: [["data", "ASC"]],
+    });
+
+    res.json(workHours);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Błąd serwera" });
+  }
+});
+
+
+router.get("/get-popup-data/:userID/:date", async (req, res) => {
+  try {
+    const { userID, date } = req.params;
+    const record = await work_hours.findOne({ where: { user_id: userID, data: date } });
+    res.json(record);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Błąd serwera" });
+  }
+});
+
+
+router.get("/notatki/:userID/:year/:month", async (req, res) => {
+  try {
+    const { userID, year, month } = req.params;
+
+    const notes = await work_hours.findAll({
+      where: {
+        user_id: userID,
+        [Op.and]: [
+          sequelize.where(sequelize.fn("strftime", "%Y", sequelize.col("data")), year),
+          sequelize.where(sequelize.fn("strftime", "%m", sequelize.col("data")), month),
+        ],
+        [Op.or]: [
+          { noteTitle: { [Op.ne]: null } },
+          { noteDescription: { [Op.ne]: null } },
+        ],
+      },
+      attributes: ["data", "noteTitle", "noteDescription"],
+      group: ["data"],
+    });
+
+    res.json(notes);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Błąd serwera" });
+  }
+});
+
+
+router.put("/update-work-hours/:userID/:date", async (req, res) => {
+  const { userID, date } = req.params;
+  const formattedDate = dayjs(date).format("YYYY-MM-DD");
+  const { godzinyPrzepracowane, nadgodziny50, nadgodziny100, nieobecnosc, noteTitle, noteDescription } = req.body;
+
+  try {
+    let entry = await work_hours.findOne({ where: { user_id: userID, data: formattedDate } });
+    if (!entry) {
+      await work_hours.create({ user_id: userID, data: formattedDate, godzinyPrzepracowane, nadgodziny50, nadgodziny100, nieobecnosc, noteTitle, noteDescription });
+      return res.json({ message: "Godziny zostały dodane do bazy danych" });
+    }
+
+    await entry.update({ godzinyPrzepracowane, nadgodziny50, nadgodziny100, nieobecnosc, noteTitle, noteDescription });
+    res.json({ message: "Godziny zostały zaktualizowane" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Błąd serwera" });
+  }
+});
+
+
+router.put("/delete-note/:userID/:date", async (req, res) => {
+  try {
+    const { userID, date } = req.params;
+    const record = await work_hours.findOne({ where: { user_id: userID, data: date } });
+    if (!record) return res.status(404).json({ message: "Nie znaleziono notatki." });
+    await record.update({ noteTitle: null, noteDescription: null });
+    res.json({ message: "Notatka została usunięta" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Błąd serwera" });
+  }
+});
+
+
+router.put("/updaterate/:userID", async (req, res) => {
+  try {
+    const { userID } = req.params;
+    const { rate } = req.body;
+    let user = await users.findOne({ where: { user_id: userID } });
+    if (!user) {
+      await users.create({ user_id: userID, rate });
+      return res.status(201).json({ message: "Stawka została dodana do bazy danych" });
+    }
+    if (user.rate !== rate) {
+      await user.update({ rate });
+      return res.json({ message: "Stawka została zaktualizowana" });
+    }
+    res.json({ message: "Stawka nie została zmieniona" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Błąd serwera" });
+  }
+});
+
+module.exports = router;
