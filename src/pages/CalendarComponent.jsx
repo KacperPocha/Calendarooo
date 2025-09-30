@@ -168,9 +168,11 @@ export const CalendarComponent = forwardRef(({ workHoursInfo, daysArrayFromChild
   };
 
 
-  useEffect(() => {
+useEffect(() => {
+  if (daysArrayFromChild) {
     daysArrayFromChild(generateDays());
-  }, [currentDate, holidays]);
+  }
+}, [currentDate, holidays, dataDay])
 
 
 
@@ -183,60 +185,75 @@ export const CalendarComponent = forwardRef(({ workHoursInfo, daysArrayFromChild
     setCurrentDate(newDate);
   };
 
-  const fetchWorkHours = async () => {
-      const userID = localStorage.getItem("userID");
-      const year = currentDate.getFullYear();
-      const month = currentDate.getMonth() + 1;
-      setLoading(true);
+  const fetchWorkHours = async (shouldRefreshOthers = false) => {
+    const userID = localStorage.getItem("userID");
+    const year = currentDate.getFullYear();
+    const month = currentDate.getMonth() + 1;
+    setLoading(true);
 
-      try {
-        const response = await axios.get(
-          `http://localhost:3000/api/get-calendar-data/${userID}/${year}/${month}`
-        );
+    try {
+      const response = await axios.get(
+        `http://localhost:3000/api/get-calendar-data/${userID}/${year}/${month}`
+      );
 
-        if (response.data && Array.isArray(response.data)) {
-          const formattedData = response.data.reduce((acc, entry) => {
-            const godzinyPrzepracowane = entry.godzinyPrzepracowane || 0;
-            const nadgodziny50 = entry.nadgodziny50 || 0;
-            const nadgodziny100 = entry.nadgodziny100 || 0;
-            acc[entry.data] =
-              godzinyPrzepracowane + nadgodziny50 + nadgodziny100;
-            return acc;
-          }, {});
+      if (response.data && Array.isArray(response.data)) {
+        const formattedData = response.data.reduce((acc, entry) => {
+          const godzinyPrzepracowane = entry.godzinyPrzepracowane || 0;
+          const nadgodziny50 = entry.nadgodziny50 || 0;
+          const nadgodziny100 = entry.nadgodziny100 || 0;
+          acc[entry.data] =
+            godzinyPrzepracowane + nadgodziny50 + nadgodziny100;
+          return acc;
+        }, {});
 
-          setDataDay(response.data);
-          setWorkHours(formattedData);
-          workHoursInfo(formattedData);
-
-          // zamiast eventu:
-          onRefresh?.();
+        setDataDay(response.data);
+        setWorkHours(formattedData);
+        workHoursInfo(formattedData);
+        if (shouldRefreshOthers && onRefresh) {
+          onRefresh();
         }
-      } catch (error) {
-        console.error("Błąd podczas pobierania godzin:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
 
-    useImperativeHandle(ref, () => ({
-      fetchWorkHours,
-    }));
+      }
+    } catch (error) {
+      console.error("Błąd podczas pobierania godzin:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+
+  const handleRefreshAfterUpdate = async () => {
+    await fetchWorkHours(false);
+    if (onRefresh) {
+      onRefresh();
+    }
+  };
+  useImperativeHandle(ref, () => ({
+    fetchWorkHours: () => fetchWorkHours(false)
+  }));
 
   useEffect(() => {
-    localStorage.setItem("date", currentDate)
-    fetchWorkHours();
+    localStorage.setItem("date", currentDate);
+    fetchWorkHours(false);
   }, [currentDate]);
 
+  // Pierwsze wywołanie
+  useEffect(() => {
+    fetchWorkHours(false);
+  }, []);
   const handleDayClick = (dayObj) => {
-  if (!dayObj.isOtherMonth) {
-    const dayKey = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, "0")}-${String(dayObj.day).padStart(2, "0")}`;
-    
-    setSelectedDate(dayKey);
-    SetIsPopUpOpen(true);   
+    if (!dayObj.isOtherMonth) {
+      const dayKey = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, "0")}-${String(dayObj.day).padStart(2, "0")}`;
 
-  }
-};
+      setSelectedDate(dayKey);
+      SetIsPopUpOpen(true);
 
+    }
+  };
+
+  useEffect(() => {
+    console.log("loading:", loading);
+  }, [loading]);
 
 
   return (
@@ -246,7 +263,7 @@ export const CalendarComponent = forwardRef(({ workHoursInfo, daysArrayFromChild
         onClose={() => SetIsPopUpOpen(false)}
         selectedDate={selectedDate}
         setSelectedDate={setSelectedDate}
-        fetchWorkHours={fetchWorkHours}
+        fetchWorkHours={handleRefreshAfterUpdate}
       />
       <div className="flex justify-between items-center mb-6">
         <button

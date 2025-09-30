@@ -37,6 +37,10 @@ export const SalaryCalc = ({ workHoursInfo, userRate, daysArray }) => {
     <div className='w-full mt-24'>
       <div className='grid justify-items-center'>
         <div className='mt-4 grid grid-col justify-items-center'>
+          <label htmlFor="hours" className='mb-2'>Dni roboczych: </label>
+          <input name='hours' type="text" value={hoursToComplete/8} className='bg-slate-300 p-1 text-center text-2xl w-24' disabled />
+        </div>
+        <div className='mt-4 grid grid-col justify-items-center'>
           <label htmlFor="hours" className='mb-2'>Godzin do wyrobienia: </label>
           <input name='hours' type="text" value={hoursToComplete} className='bg-slate-300 p-1 text-center text-2xl w-24' disabled />
         </div>

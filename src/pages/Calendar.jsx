@@ -36,10 +36,11 @@ export const Calendar = () => {
     setDaysArrayFromChild(data)
   }
   const refreshAllData = async () => {
-    await notesRef.current?.fetchWorkHours();
-    await calendarRef.current?.fetchWorkHours();
-  };
-
+  await Promise.all([
+    notesRef.current?.fetchWorkHours(),
+    calendarRef.current?.fetchWorkHours()
+  ]);
+};
   useEffect(() => {
     setUserId(localStorage.getItem("userID"));
   }, []);

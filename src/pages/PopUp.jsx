@@ -24,11 +24,11 @@ const PopUp = ({ isOpen, onClose, selectedDate, setSelectedDate, fetchWorkHours,
     setNotes(notesOpen);
   }, [notesOpen]);
 
- useEffect(() => {
-  if (isOpen && selectedDate) {
-    fetchWorkHoursData();
-  }
-}, [isOpen, selectedDate]);
+  useEffect(() => {
+    if (isOpen && selectedDate) {
+      fetchWorkHoursData();
+    }
+  }, [isOpen, selectedDate]);
 
   const fetchWorkHoursData = async () => {
     const userID = localStorage.getItem("userID");
@@ -73,7 +73,7 @@ const PopUp = ({ isOpen, onClose, selectedDate, setSelectedDate, fetchWorkHours,
       noteDescription !== workHoursData?.noteDescription
     ) {
       const userID = localStorage.getItem("userID");
-
+      const isNoteEmpty = !noteTitle || noteTitle.trim() === "";
       try {
         await axios.put(
           `http://localhost:3000/api/update-work-hours/${userID}/${data}`,
@@ -82,11 +82,11 @@ const PopUp = ({ isOpen, onClose, selectedDate, setSelectedDate, fetchWorkHours,
             nadgodziny50: nadgodziny50,
             nadgodziny100: nadgodziny100,
             nieobecnosc: nieobecnosc,
-            noteTitle: noteTitle,
-            noteDescription: noteDescription
+            noteTitle: isNoteEmpty ? null : noteTitle,
+            noteDescription: isNoteEmpty ? null : noteDescription
           }
         );
-        
+
         setWorkHours(parsedWorkHours);
         setnadgodziny50(nadgodziny50);
         setnadgodziny100(nadgodziny100);
@@ -94,7 +94,11 @@ const PopUp = ({ isOpen, onClose, selectedDate, setSelectedDate, fetchWorkHours,
         setNoteTitle(noteTitle);
         setNoteDescription(noteDescription);
         onClose();
-        fetchWorkHours();
+        setTimeout(() => {
+          if (fetchWorkHours) {
+            fetchWorkHours();
+          }
+        }, 100);
       } catch (error) {
         console.error("Błąd podczas zapisywania godzin:", error);
       }
