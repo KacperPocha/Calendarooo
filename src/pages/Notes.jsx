@@ -31,7 +31,6 @@ export const Notes = forwardRef((props, ref) => {
         await axios.put(`http://localhost:3000/api/delete-note/${userID}/${date}`);
         await fetchWorkHours();
         
-        window.dispatchEvent(new CustomEvent('refreshCalendar'));
         
     } catch (error) {
         console.error("Błąd podczas usuwania notatki:", error);

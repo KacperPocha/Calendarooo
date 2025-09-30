@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { CalendarComponent } from "./CalendarComponent";
 import { SalaryCalc } from "./SalaryCalc";
-import UserSettings from "./UserSettings";
+import Usersettings from "./Usersettings";
 import { Notes } from "./Notes";
 import io from 'socket.io-client';
 import { Menu } from "./Menu";
@@ -15,9 +15,10 @@ export const Calendar = () => {
   const [userId, setUserId] = useState(null);
   const [user, setUser] = useState(null);
   const [hours, setHours] = useState([]);
-  const [isPopUpOpen, SetIsPopUpOpen] = useState(false);
+  const [isPopUpOpen, setIsPopUpOpen] = useState(false);
   const [daysArrayFromChild, setDaysArrayFromChild] = useState([])
-  const notesRef = useRef()
+  const notesRef = useRef();
+  const calendarRef = useRef();
   const [loading, setLoading] = useState(false)
   const navigate = useNavigate()
 
@@ -34,15 +35,16 @@ export const Calendar = () => {
   const handleDaysArrayFromChild = (data) => {
     setDaysArrayFromChild(data)
   }
-
+  const refreshAllData = async () => {
+    await notesRef.current?.fetchWorkHours();
+    await calendarRef.current?.fetchWorkHours();
+  };
 
   useEffect(() => {
     setUserId(localStorage.getItem("userID"));
   }, []);
 
-  const getData = (workHours) => {
-    setHours(workHours);
-  };
+
 
   useEffect(() => {
     if (isPopUpOpen) document.body.style.overflow = "hidden";
@@ -88,7 +90,7 @@ export const Calendar = () => {
     <div className="w-full">
       <div className="flex w-full">
         <Menu
-          onSettingsClick={() => SetIsPopUpOpen(true)}
+          onsettingsClick={() => setIsPopUpOpen(true)}
           onLogoutClick={() => {
             navigate("/");
             localStorage.clear();
@@ -96,9 +98,9 @@ export const Calendar = () => {
           user={user}
         />
 
-        <UserSettings
+        <Usersettings
           isOpen={isPopUpOpen}
-          onClose={() => SetIsPopUpOpen(false)}
+          onClose={() => setIsPopUpOpen(false)}
           userRate={user?.rate || 0}
         />
 
@@ -106,12 +108,14 @@ export const Calendar = () => {
       <div className="grid grid-cols-13 w-full">
         <div className="col-start-1 col-end-2 col-span-2">
           <Notes
-            ref={notesRef} />
+            ref={notesRef} onRefresh={refreshAllData} />
         </div>
         <div className="col-span-8 col-start-2 col-end-12">
-          <CalendarComponent workHoursInfo={getData}
+          <CalendarComponent
+            ref={calendarRef}
+            workHoursInfo={setHours}
             daysArrayFromChild={handleDaysArrayFromChild}
-            onRefreshNotes={() => notesRef.current?.fetchWorkHours()}
+            onRefresh={refreshAllData}
           />
         </div>
         <div className="col-start-12 col-span-2">

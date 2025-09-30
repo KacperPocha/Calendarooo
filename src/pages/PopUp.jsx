@@ -19,29 +19,16 @@ const PopUp = ({ isOpen, onClose, selectedDate, setSelectedDate, fetchWorkHours,
   const data = `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
 
 
-  useEffect(() => {
-    const handleRefreshPopup = () => {
-        if (selectedDate) {
-            fetchWorkHoursData(); 
-        }
-    };
-
-    window.addEventListener('refreshCalendar', handleRefreshPopup);
-    
-    return () => {
-        window.removeEventListener('refreshCalendar', handleRefreshPopup);
-    };
-}, [selectedDate]);
 
   useEffect(() => {
     setNotes(notesOpen);
   }, [notesOpen]);
 
-  useEffect(() => {
-    if (selectedDate) {
-      fetchWorkHoursData();
-    }
-  }, [selectedDate]);
+ useEffect(() => {
+  if (isOpen && selectedDate) {
+    fetchWorkHoursData();
+  }
+}, [isOpen, selectedDate]);
 
   const fetchWorkHoursData = async () => {
     const userID = localStorage.getItem("userID");
@@ -99,14 +86,13 @@ const PopUp = ({ isOpen, onClose, selectedDate, setSelectedDate, fetchWorkHours,
             noteDescription: noteDescription
           }
         );
-
+        
         setWorkHours(parsedWorkHours);
         setnadgodziny50(nadgodziny50);
         setnadgodziny100(nadgodziny100);
         setnieobecnosc(nieobecnosc);
         setNoteTitle(noteTitle);
         setNoteDescription(noteDescription);
-        window.dispatchEvent(new CustomEvent('refreshCalendar'));
         onClose();
         fetchWorkHours();
       } catch (error) {
@@ -135,19 +121,12 @@ const PopUp = ({ isOpen, onClose, selectedDate, setSelectedDate, fetchWorkHours,
 
   const Close = () => {
     setNotes(false);
-    setWorkHoursData(0);
-    setWorkHours(0);
-    setnadgodziny50(0);
-    setnadgodziny100(0);
-    setnieobecnosc(null);
-    setNoteTitle(null);
-    setNoteDescription(null);
+    onClose();
   };
 
   return (
     <div
       className="fixed inset-0 flex justify-center items-center bg-black bg-opacity-50 z-50 overflow-auto"
-      onClick={() => { Close(); onClose(); }}
     >
       <div
         className="flex flex-col bg-white rounded-lg shadow-lg p-6 w-full max-w-xl max-h-[90vh] overflow-auto relative"

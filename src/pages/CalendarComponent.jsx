@@ -6,7 +6,7 @@ import io from 'socket.io-client';
 
 const socket = io('http://localhost:3000');
 
-export const CalendarComponent = forwardRef(({ workHoursInfo, daysArrayFromChild, onRefreshNotes }, ref) => {
+export const CalendarComponent = forwardRef(({ workHoursInfo, daysArrayFromChild, onRefresh }, ref) => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [workHours, setWorkHours] = useState([]);
   const [selectedDate, setSelectedDate] = useState("");
@@ -15,18 +15,6 @@ export const CalendarComponent = forwardRef(({ workHoursInfo, daysArrayFromChild
   const [holidays, setHolidays] = useState([])
   const [dataDay, setDataDay] = useState([])
   const [loading, setLoading] = useState(false)
-
-  useEffect(() => {
-    const handleRefresh = () => {
-        fetchWorkHours();
-    };
-
-    window.addEventListener('refreshCalendar', handleRefresh);
-    
-    return () => {
-        window.removeEventListener('refreshCalendar', handleRefresh);
-    };
-}, []); 
 
 
   useEffect(() => {
@@ -196,74 +184,59 @@ export const CalendarComponent = forwardRef(({ workHoursInfo, daysArrayFromChild
   };
 
   const fetchWorkHours = async () => {
-    const userID = localStorage.getItem("userID");
-    const year = currentDate.getFullYear();
-    const month = currentDate.getMonth() + 1;
-    onRefreshNotes && onRefreshNotes();
-    setLoading(true);
+      const userID = localStorage.getItem("userID");
+      const year = currentDate.getFullYear();
+      const month = currentDate.getMonth() + 1;
+      setLoading(true);
 
-    try {
-      if (!userID) {
-        console.error("Brak userID w localStorage");
+      try {
+        const response = await axios.get(
+          `http://localhost:3000/api/get-calendar-data/${userID}/${year}/${month}`
+        );
+
+        if (response.data && Array.isArray(response.data)) {
+          const formattedData = response.data.reduce((acc, entry) => {
+            const godzinyPrzepracowane = entry.godzinyPrzepracowane || 0;
+            const nadgodziny50 = entry.nadgodziny50 || 0;
+            const nadgodziny100 = entry.nadgodziny100 || 0;
+            acc[entry.data] =
+              godzinyPrzepracowane + nadgodziny50 + nadgodziny100;
+            return acc;
+          }, {});
+
+          setDataDay(response.data);
+          setWorkHours(formattedData);
+          workHoursInfo(formattedData);
+
+          // zamiast eventu:
+          onRefresh?.();
+        }
+      } catch (error) {
+        console.error("Błąd podczas pobierania godzin:", error);
+      } finally {
         setLoading(false);
-        return;
       }
+    };
 
-      const response = await axios.get(
-        `http://localhost:3000/api/get-calendar-data/${userID}/${year}/${month}`
-      );
-
-      if (response.data && Array.isArray(response.data)) {
-        console.log(response.data);
-
-        const workHoursData = response.data;
-
-        const formattedData = workHoursData.reduce((acc, entry) => {
-          const godzinyPrzepracowane = entry.godzinyPrzepracowane || 0;
-          const nadgodziny50 = entry.nadgodziny50 || 0;
-          const nadgodziny100 = entry.nadgodziny100 || 0;
-
-          acc[entry.data] = godzinyPrzepracowane + nadgodziny50 + nadgodziny100;
-          return acc;
-        }, {});
-
-        setDataDay(workHoursData);
-        setWorkHours(formattedData);
-
-        onRefreshNotes();
-      } else {
-        console.error("Nieprawidłowa struktura danych:", response.data);
-        alert("Brak danych o godzinach pracy.");
-      }
-    } catch (error) {
-      console.error("Błąd podczas pobierania godzin:", error);
-      alert("Wystąpił błąd podczas pobierania godzin.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
+    useImperativeHandle(ref, () => ({
+      fetchWorkHours,
+    }));
 
   useEffect(() => {
     localStorage.setItem("date", currentDate)
     fetchWorkHours();
   }, [currentDate]);
 
-  const handleDayClick = async (dayObj) => {
-    if (!dayObj.isOtherMonth) {
-      const dayKey = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, "0")}-${String(dayObj.day).padStart(2, "0")}`;
+  const handleDayClick = (dayObj) => {
+  if (!dayObj.isOtherMonth) {
+    const dayKey = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, "0")}-${String(dayObj.day).padStart(2, "0")}`;
+    
+    setSelectedDate(dayKey);
+    SetIsPopUpOpen(true);   
 
-      await fetchWorkHours();
-      setSelectedDate(dayKey);
-      SetIsPopUpOpen(true);
-    }
-  };
+  }
+};
 
-  useImperativeHandle(ref, () => ({
-    fetchWorkHours: async () => {
-      await fetchWorkHours();
-    }
-  }));
 
 
   return (
@@ -303,7 +276,6 @@ export const CalendarComponent = forwardRef(({ workHoursInfo, daysArrayFromChild
           ))}
         </div>
 
-        {/* Dni w kalendarzu */}
         <div className="grid grid-cols-7 gap-2">
           {generateDays().map((dayObj, index) => {
             const dayKey = `${currentDate.getFullYear()}-${String(
