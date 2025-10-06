@@ -56,7 +56,7 @@ export const Calendar = () => {
   }, [isPopUpOpen]);
 
 
-
+console.log(isPopUpOpen)
   useEffect(() => {
     const getUser = async () => {
       setLoading(true);
@@ -91,7 +91,7 @@ export const Calendar = () => {
     <div className="w-full">
       <div className="flex w-full">
         <Menu
-          onsettingsClick={() => setIsPopUpOpen(true)}
+          onSettingsClick={() => setIsPopUpOpen(true)}
           onLogoutClick={() => {
             navigate("/");
             localStorage.clear();
