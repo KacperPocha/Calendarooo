@@ -13,6 +13,7 @@ const socket = io('http://localhost:3000');
 
 export const Calendar = () => {
   const [userId, setUserId] = useState(null);
+  const [userSetting, setUserSetting] = useState({})
   const [user, setUser] = useState(null);
   const [hours, setHours] = useState([]);
   const [isPopUpOpen, setIsPopUpOpen] = useState(false);
@@ -46,6 +47,11 @@ export const Calendar = () => {
   }, []);
 
 
+  useEffect(() => {
+    if(userId){
+      refreshUserSettings()
+    }
+  }, [userId])
 
   useEffect(() => {
     if (isPopUpOpen) document.body.style.overflow = "hidden";
@@ -54,6 +60,21 @@ export const Calendar = () => {
       document.body.style.overflow = "";
     };
   }, [isPopUpOpen]);
+
+  const refreshUserSettings = async () => {
+  const userID = localStorage.getItem("userID");
+  if (!userID) return;
+  try {
+    const response = await axios.get(`http://localhost:3000/api/get-settings/${userID}`);
+    setUserSetting(prev => ({
+      ...prev,
+      settings: response.data  
+    }));
+  } catch (error) {
+    console.error("Błąd przy pobieraniu ustawień:", error);
+  }
+};
+
 
 
   useEffect(() => {
@@ -101,7 +122,7 @@ export const Calendar = () => {
         <Usersettings
           isOpen={isPopUpOpen}
           onClose={() => setIsPopUpOpen(false)}
-          userRate={user?.rate || 0}
+          onSettingsSaved={refreshUserSettings}
         />
 
       </div>
@@ -120,7 +141,7 @@ export const Calendar = () => {
         </div>
         <div className="col-start-12 col-span-2">
           <SalaryCalc workHoursInfo={hours}
-            userRate={user?.rate || 0}
+            userSetting={userSetting}
             daysArray={daysArrayFromChild}
           />
         </div>

@@ -1,7 +1,7 @@
 import axios from 'axios';
 import React, { useEffect, useState } from 'react'
 
-const UserSettings = ({ isOpen, onClose, userRate }) => {
+const UserSettings = ({ isOpen, onClose, userRate, onSettingsSaved }) => {
     const [typeOfJobTime, setTypeOfJobTime] = useState(null)
     const [rateType, setRateType] = useState(null)
     const [over26, setOver26] = useState(false)
@@ -38,6 +38,7 @@ const UserSettings = ({ isOpen, onClose, userRate }) => {
                     }
                 );
                 console.log(response.data.message);
+                if (onSettingsSaved) onSettingsSaved()
                 onClose();
             } catch (error) {
                 console.error("Błąd podczas zapisywania stawki:", error);
@@ -57,6 +58,7 @@ const UserSettings = ({ isOpen, onClose, userRate }) => {
                     }
                 );
                 console.log(response.data.message);
+                if (onSettingsSaved) onSettingsSaved()
                 onClose();
             } catch (error) {
                 console.error("Błąd podczas zapisywania stawki:", error);

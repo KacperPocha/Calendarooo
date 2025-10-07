@@ -97,6 +97,9 @@ const work_hours = sequelize.define("work_hour", {
   stawkaBrutto: DataTypes.FLOAT,
   noteTitle: DataTypes.STRING,
   noteDescription: DataTypes.STRING,
+  /*
+  rateInThisMonth: DataTypes.FLOAT,
+  */
 });
 
 users.hasMany(work_hours, { foreignKey: "user_id" });
