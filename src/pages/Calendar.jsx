@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { CalendarComponent } from "./CalendarComponent";
 import { SalaryCalc } from "./SalaryCalc";
-import Usersettings from "./Usersettings";
+import Usersettings from "./UserSettings";
 import { Notes } from "./Notes";
 import io from 'socket.io-client';
 import { Menu } from "./Menu";
@@ -56,7 +56,6 @@ export const Calendar = () => {
   }, [isPopUpOpen]);
 
 
-console.log(isPopUpOpen)
   useEffect(() => {
     const getUser = async () => {
       setLoading(true);

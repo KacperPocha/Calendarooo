@@ -2,38 +2,94 @@ import axios from 'axios';
 import React, { useEffect, useState } from 'react'
 
 const UserSettings = ({ isOpen, onClose, userRate }) => {
-    const [rate, setRate] = useState(0)
-    const [rateType, setRateType] = useState(null)
     const [typeOfJobTime, setTypeOfJobTime] = useState(null)
+    const [rateType, setRateType] = useState(null)
+    const [over26, setOver26] = useState(false)
+    const [vacationDays, setVacationDays] = useState(0)
+    const [rate, setRate] = useState(0)
     const [nightAddon, setNightAddon] = useState(0)
     const [checked, setChecked] = useState(false)
+    const [constAddons, setConstAddons] = useState(0)
 
     useEffect(() => {
         setRate(userRate)
     }, [userRate])
-
     const handleSubmit = async (e) => {
-
+        e.preventDefault()
+        if (typeOfJobTime === null || rateType === null || over26 === null || vacationDays === 0 || rate === 0) {
+            alert("Wypełnij wszystkie dane")
+            return;
+        }
 
         const userID = localStorage.getItem("userID");
 
-        try {
-            const response = await axios.put(
-                `http://localhost:3000/api/updaterate/${userID}`,
-                { rate: rate }
-            );
-            console.log(response.data.message);
-            onClose();
-        } catch (error) {
-            console.error("Błąd podczas zapisywania stawki:", error);
+        if (checked) {
+            try {
+                const response = await axios.put(
+                    `http://localhost:3000/api/update-settings/${userID}`,
+                    {
+                        typeOfJobTime: typeOfJobTime,
+                        rateType: rateType,
+                        over26: over26,
+                        vacationDays: vacationDays,
+                        rate: rate,
+                        nightAddon: nightAddon,
+                        constAddons: constAddons,
+                    }
+                );
+                console.log(response.data.message);
+                onClose();
+            } catch (error) {
+                console.error("Błąd podczas zapisywania stawki:", error);
+            }
+        } else {
+            try {
+                const response = await axios.put(
+                    `http://localhost:3000/api/update-settings/${userID}`,
+                    {
+                        typeOfJobTime: typeOfJobTime,
+                        rateType: rateType,
+                        over26: over26,
+                        vacationDays: vacationDays,
+                        rate: rate,
+                        nightAddon: 0,
+                        constAddons: constAddons,
+                    }
+                );
+                console.log(response.data.message);
+                onClose();
+            } catch (error) {
+                console.error("Błąd podczas zapisywania stawki:", error);
+            }
         }
+
     };
+
+    useEffect(() => {
+  const userID = localStorage.getItem("userID");
+  if (isOpen && userID) {
+    axios
+      .get(`http://localhost:3000/api/get-settings/${userID}`)
+      .then(res => {
+        const s = res.data;
+        setTypeOfJobTime(s.typeOfJobTime);
+        setRateType(s.rateType);
+        setOver26(s.over26);
+        setVacationDays(s.vacationDays);
+        setRate(s.rate);
+        setNightAddon(s.nightAddon);
+        setConstAddons(s.constAddons);
+      })
+      .catch(err => {
+        console.log("Brak istniejących ustawień lub błąd:", err);
+      });
+  }
+}, [isOpen]);
 
 
     if (!isOpen) return null;
 
 
-    console.log(nightAddon)
 
     return (
         <div
@@ -108,29 +164,58 @@ const UserSettings = ({ isOpen, onClose, userRate }) => {
                             </li>
                         </ul>
                     </div>
+                    <div className='mb-4 flex justify-between'>
+                        <span>Czy posiadasz mniej niż 26 lat?</span>
+                        <div className='flex items-center '>
+                            <input id="react-checkbox-list" type="checkbox" value="" class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded-sm focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-700 dark:focus:ring-offset-gray-700 focus:ring-2 dark:bg-gray-600 dark:border-gray-500"
+                                checked={over26}
+                                onChange={() => setOver26(true)}
+                            />
+                            <label htmlFor="react-checkbox-list" className='ml-2'>Tak</label>
+                        </div>
+                        <div className='flex items-center '>
+                            <input id="react-checkbox-list" type="checkbox" value="" class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded-sm focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-700 dark:focus:ring-offset-gray-700 focus:ring-2 dark:bg-gray-600 dark:border-gray-500"
+                                checked={!over26}
+                                onChange={() => setOver26(false)}
+                            />
+                            <label htmlFor="react-checkbox-list" className='ml-2'>Nie</label>
+                        </div>
+
+                    </div>
+                    <div className='mb-4 flex justify-between'>
+                        <label htmlFor="rate" className='mr-2'>Wymiar urlopu: </label>
+                        <input type="number" name="rate" className='border-2 border-black' value={vacationDays} onChange={(e) => setVacationDays(Number(e.target.value))} />
+                    </div>
                     {rateType === "month" ?
-                        <div className='mb-4'>
+                        <div className='mb-4 flex justify-between'>
                             <label htmlFor="rate" className='mr-2'>Stawka brutto [mieś.]: </label>
-                            <input type="number" name="rate" className='border-2 border-black' value={rate} onChange={(e) => setRate(e.target.value)} />
+                            <input type="number" name="rate" className='border-2 border-black' value={rate} onChange={(e) => setRate(Number(e.target.value))} />
                         </div>
                         :
-                        <div className='mb-4'>
+                        <div className='mb-4 flex justify-between'>
                             <label htmlFor="rate" className='mr-2'>Stawka brutto [/h]: </label>
-                            <input type="number" name="rate" className='border-2 border-black' value={rate} onChange={(e) => setRate(e.target.value)} />
+                            <input type="number" name="rate" className='border-2 border-black' value={rate} onChange={(e) => setRate(Number(e.target.value))} />
                         </div>
                     }
-                    <div className='flex items-center'>
-                        <input id="react-checkbox-list" type="checkbox" value="" class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded-sm focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-700 dark:focus:ring-offset-gray-700 focus:ring-2 dark:bg-gray-600 dark:border-gray-500 mr-2"
-                            checked={checked}
-                            onChange={(e) => {
-                                setChecked(e.target.checked);
-                                if (e.target.checked) setNightAddon(0);
-                            }}
-                        />
-                        <label htmlFor="rate" className='mr-2'>Dodatek Nocny [%]: </label>
-                        <input type="number" name="rate" className='border-2 border-black' value={nightAddon} onChange={(e) => setNightAddon(e.target.value)} disabled={checked} />
+                    <div className='flex items-center justify-between mb-4'>
+                        <div className='flex items-center'>
+                            <input id="react-checkbox-list" type="checkbox" value="" class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded-sm focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-700 dark:focus:ring-offset-gray-700 focus:ring-2 dark:bg-gray-600 dark:border-gray-500 mr-2"
+                                checked={checked}
+                                onChange={(e) => {
+                                    setChecked(e.target.checked);
+                                    if (e.target.checked) setNightAddon(0);
+                                }}
+                            />
+                            <label htmlFor="rate" className='mr-2'>Dodatek Nocny [%]: </label>
+                        </div>
+
+                        <input type="number" name="rate" className='border-2 border-black' value={nightAddon} onChange={(e) => setNightAddon(Number(e.target.value))} disabled={!checked} />
                     </div>
 
+                    <div className='flex justify-between'>
+                        <label htmlFor="rate" className='mr-2'>Suma stałych dodatków [brutto zł]: </label>
+                        <input type="number" name="rate" className='border-2 border-black' value={constAddons} onChange={(e) => setConstAddons(Number(e.target.value))} />
+                    </div>
                     <button className='bg-blue-500 text-white px-4 py-2 rounded w-24 mt-8' type="submit">
                         Zapisz
                     </button>

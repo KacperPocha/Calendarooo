@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const dayjs = require("dayjs");
 const { Op } = require("sequelize");
-const { users, work_hours, sequelize } = require("../db");
+const { users, work_hours, userSettings, sequelize } = require("../db");
 const authenticateToken = require("../utils/authMiddleware");
 
 
@@ -137,24 +137,59 @@ router.put("/delete-note/:userID/:date", async (req, res) => {
 });
 
 
-router.put("/updaterate/:userID", async (req, res) => {
+router.put("/update-settings/:userID", async (req, res) => {
   try {
     const { userID } = req.params;
-    const { rate } = req.body;
-    let user = await users.findOne({ where: { user_id: userID } });
-    if (!user) {
-      await users.create({ user_id: userID, rate });
-      return res.status(201).json({ message: "Stawka została dodana do bazy danych" });
+    console.log(userID)
+    const { typeOfJobTime, rateType, over26, vacationDays, rate, constAddons, nightAddon } = req.body;
+
+    let settings = await userSettings.findOne({ where: { user_id: userID } });
+
+    if (!settings) {
+
+      await userSettings.create({
+        user_id: userID,
+        typeOfJobTime,
+        rateType,
+        over26,
+        vacationDays,
+        rate,
+        constAddons,
+        nightAddon,
+      });
+      return res.status(201).json({ message: "Dane zostały dodane do bazy" });
     }
-    if (user.rate !== rate) {
-      await user.update({ rate });
-      return res.json({ message: "Stawka została zaktualizowana" });
-    }
-    res.json({ message: "Stawka nie została zmieniona" });
+
+    await settings.update({
+      typeOfJobTime,
+      rateType,
+      over26,
+      vacationDays,
+      rate,
+      constAddons,
+      nightAddon,
+    });
+
+    res.json({ message: "Dane zostały zaktualizowane" });
+
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Błąd serwera" });
   }
 });
+
+router.get("/get-settings/:userID", async (req, res) => {
+  try {
+    const { userID } = req.params;
+    const settings = await userSettings.findOne({ where: { user_id: userID } });
+    if (!settings) return res.status(404).json({ message: "Brak ustawień dla użytkownika" });
+    res.json(settings);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Błąd serwera" });
+  }
+});
+
+
 
 module.exports = router;

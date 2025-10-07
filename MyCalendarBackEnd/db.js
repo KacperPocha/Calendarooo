@@ -11,7 +11,7 @@ const users = sequelize.define("user", {
     primaryKey: true,
     autoIncrement: true,
   },
-   email: {
+  email: {
     type: DataTypes.STRING,
     allowNull: false,
     unique: true,
@@ -28,15 +28,58 @@ const users = sequelize.define("user", {
     type: DataTypes.STRING,
     allowNull: false,
   },
-  rate: {
-    type: DataTypes.INTEGER,
-    allowNull: true,
-  },
   verified: {
     type: DataTypes.BOOLEAN,
     defaultValue: false,
   },
 });
+
+const userSettings = sequelize.define("user_settings", {
+  id: {
+    type: DataTypes.INTEGER,
+    primaryKey: true,
+    autoIncrement: true,
+  },
+  user_id: {
+    type: DataTypes.INTEGER,
+    references: {
+      model: users,
+      key: "user_id",
+    },
+    allowNull: false,
+    onDelete: "CASCADE",
+  },
+  typeOfJobTime: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+  rateType: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+  over26: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: false,
+  },
+  vacationDays: {
+    type: DataTypes.INTEGER,
+    defaultValue: 20,
+  },
+  rate: {
+    type: DataTypes.FLOAT,
+    allowNull: false,
+  },
+  nightAddon: {
+    type: DataTypes.FLOAT,
+    defaultValue: 0,
+  },
+  constAddons: {
+    type: DataTypes.FLOAT,
+    defaultValue: 0,
+  },
+});
+users.hasOne(userSettings, { foreignKey: "user_id" });
+userSettings.belongsTo(users, { foreignKey: "user_id" });
 
 const work_hours = sequelize.define("work_hour", {
   user_id: {
@@ -61,4 +104,4 @@ work_hours.belongsTo(users, { foreignKey: "user_id" });
 
 sequelize.sync();
 
-module.exports = { sequelize, users, work_hours };
+module.exports = { sequelize, users, work_hours, userSettings };
