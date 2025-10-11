@@ -123,6 +123,7 @@ export const Calendar = () => {
           isOpen={isPopUpOpen}
           onClose={() => setIsPopUpOpen(false)}
           onSettingsSaved={refreshUserSettings}
+          date={hours}
         />
 
       </div>

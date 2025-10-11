@@ -97,10 +97,30 @@ const work_hours = sequelize.define("work_hour", {
   stawkaBrutto: DataTypes.FLOAT,
   noteTitle: DataTypes.STRING,
   noteDescription: DataTypes.STRING,
-  /*
-  rateInThisMonth: DataTypes.FLOAT,
-  */
-});
+})
+
+const monthly_settings = sequelize.define("monthly_settings", {
+   id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
+  user_id: {
+    type: DataTypes.INTEGER,
+    references: { model: users, key: "user_id" },
+    allowNull: false,
+    onDelete: "CASCADE",
+  },
+  year: DataTypes.INTEGER,
+  month: DataTypes.INTEGER,
+
+
+  typeOfJobTime: DataTypes.STRING,
+  rateType: DataTypes.STRING,
+  over26: DataTypes.BOOLEAN,
+  vacationDays: DataTypes.INTEGER,
+  rate: DataTypes.FLOAT,
+  nightAddon: DataTypes.FLOAT,
+  constAddons: DataTypes.FLOAT,
+}, { timestamps: true });
+
+
 
 users.hasMany(work_hours, { foreignKey: "user_id" });
 work_hours.belongsTo(users, { foreignKey: "user_id" });

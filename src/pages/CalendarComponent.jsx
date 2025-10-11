@@ -182,6 +182,7 @@ useEffect(() => {
       currentDate.getMonth() + direction,
       1
     );
+
     setCurrentDate(newDate);
   };
 
@@ -233,7 +234,7 @@ useEffect(() => {
   }));
 
   useEffect(() => {
-    localStorage.setItem("date", currentDate);
+    localStorage.setItem("date", currentDate.toISOString());
     fetchWorkHours(false);
   }, [currentDate]);
 
@@ -254,7 +255,6 @@ useEffect(() => {
   useEffect(() => {
     console.log("loading:", loading);
   }, [loading]);
-
 
   return (
     <div className="p-4  mx-auto">

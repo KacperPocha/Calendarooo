@@ -1,7 +1,7 @@
 import axios from 'axios';
 import React, { useEffect, useState } from 'react'
 
-const UserSettings = ({ isOpen, onClose, userRate, onSettingsSaved }) => {
+const UserSettings = ({ isOpen, onClose, userRate, onSettingsSaved}) => {
     const [typeOfJobTime, setTypeOfJobTime] = useState(null)
     const [rateType, setRateType] = useState(null)
     const [over26, setOver26] = useState(false)
@@ -10,6 +10,10 @@ const UserSettings = ({ isOpen, onClose, userRate, onSettingsSaved }) => {
     const [nightAddon, setNightAddon] = useState(0)
     const [checked, setChecked] = useState(false)
     const [constAddons, setConstAddons] = useState(0)
+    const date = new Date(localStorage.getItem("date"));
+    const month = date.getMonth()+1;
+    const year = date.getFullYear();
+
 
     useEffect(() => {
         setRate(userRate)
