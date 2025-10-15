@@ -127,4 +127,4 @@ work_hours.belongsTo(users, { foreignKey: "user_id" });
 
 sequelize.sync();
 
-module.exports = { sequelize, users, work_hours, userSettings };
+module.exports = { sequelize, users, work_hours, userSettings, monthly_settings };

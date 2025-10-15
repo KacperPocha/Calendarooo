@@ -18,9 +18,13 @@ export const Calendar = () => {
   const [hours, setHours] = useState([]);
   const [isPopUpOpen, setIsPopUpOpen] = useState(false);
   const [daysArrayFromChild, setDaysArrayFromChild] = useState([])
+  const [mode, setMode] = useState("main")
   const notesRef = useRef();
   const calendarRef = useRef();
   const [loading, setLoading] = useState(false)
+  const date = new Date(localStorage.getItem("date"));
+  const month = date.getMonth() + 1;
+  const year = date.getFullYear();
   const navigate = useNavigate()
 
   useEffect(() => {
@@ -37,18 +41,18 @@ export const Calendar = () => {
     setDaysArrayFromChild(data)
   }
   const refreshAllData = async () => {
-  await Promise.all([
-    notesRef.current?.fetchWorkHours(),
-    calendarRef.current?.fetchWorkHours()
-  ]);
-};
+    await Promise.all([
+      notesRef.current?.fetchWorkHours(),
+      calendarRef.current?.fetchWorkHours()
+    ]);
+  };
   useEffect(() => {
     setUserId(localStorage.getItem("userID"));
   }, []);
 
 
   useEffect(() => {
-    if(userId){
+    if (userId) {
       refreshUserSettings()
     }
   }, [userId])
@@ -61,92 +65,105 @@ export const Calendar = () => {
     };
   }, [isPopUpOpen]);
 
+
+useEffect(() => {
+  refreshUserSettings()
+}, [month, year])
+
   const refreshUserSettings = async () => {
-  const userID = localStorage.getItem("userID");
-  if (!userID) return;
-  try {
-    const response = await axios.get(`http://localhost:3000/api/get-settings/${userID}`);
-    setUserSetting(prev => ({
-      ...prev,
-      settings: response.data  
-    }));
-  } catch (error) {
-    console.error("Błąd przy pobieraniu ustawień:", error);
-  }
-};
 
+    const userID = localStorage.getItem('userID')
+    if (!userID) return
 
-
-  useEffect(() => {
-    const getUser = async () => {
-      setLoading(true);
-      try {
-        const response = await axios.get(
-          `http://localhost:3000/api/get-user-info/${userId}`
-        );
-        if (response.data && response.data) {
-          setUser(response.data);
-          socket.emit('user-logged-in', {
-            userID: userId,
-            username: response.data.username
-          });
-        } else {
-          alert("Błąd logowania: Brak ID");
-        }
-      } catch (err) {
-        console.error(err);
-        alert("Użytkownik nie istnieje");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    if (userId) {
-      getUser();
+    try {
+      const res = await axios.get(`http://localhost:3000/api/get-monthly-settings/${userID}/${year}/${month}`)
+      setUserSetting(res.data)
+    } catch (err) {
+      console.error('Błąd przy pobieraniu ustawień miesięcznych:', err)
     }
-  }, [userId]);
+  }
 
 
-  return (
-    <div className="w-full">
-      <div className="flex w-full">
-        <Menu
-          onSettingsClick={() => setIsPopUpOpen(true)}
-          onLogoutClick={() => {
-            navigate("/");
-            localStorage.clear();
-          }}
-          user={user}
-        />
 
-        <Usersettings
-          isOpen={isPopUpOpen}
-          onClose={() => setIsPopUpOpen(false)}
-          onSettingsSaved={refreshUserSettings}
-          date={hours}
-        />
 
+
+useEffect(() => {
+  const getUser = async () => {
+    setLoading(true);
+    try {
+      const response = await axios.get(
+        `http://localhost:3000/api/get-user-info/${userId}`
+      );
+      if (response.data && response.data) {
+        setUser(response.data);
+        socket.emit('user-logged-in', {
+          userID: userId,
+          username: response.data.username
+        });
+      } else {
+        alert("Błąd logowania: Brak ID");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Użytkownik nie istnieje");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (userId) {
+    getUser();
+  }
+}, [userId]);
+
+
+return (
+  <div className="w-full">
+    <div className="flex w-full">
+      <Menu
+        setMode={setMode}
+        setIsPopUpOpen={setIsPopUpOpen}
+        onLogoutClick={() => {
+          navigate("/");
+          localStorage.clear();
+        }}
+        user={user}
+      />
+
+      <Usersettings
+        mode={mode}
+        isOpen={isPopUpOpen}
+        onClose={() => setIsPopUpOpen(false)}
+        onSettingsSaved={refreshUserSettings}
+        date={hours}
+      />
+
+    </div>
+    
+    <div className="grid grid-cols-13 w-full">
+      <div className="col-start-1 col-end-2 col-span-2">
+        <Notes
+          ref={notesRef} onRefresh={refreshAllData} />
       </div>
-      <div className="grid grid-cols-13 w-full">
-        <div className="col-start-1 col-end-2 col-span-2">
-          <Notes
-            ref={notesRef} onRefresh={refreshAllData} />
-        </div>
-        <div className="col-span-8 col-start-2 col-end-12">
-          <CalendarComponent
-            ref={calendarRef}
-            workHoursInfo={setHours}
-            daysArrayFromChild={handleDaysArrayFromChild}
-            onRefresh={refreshAllData}
-          />
-        </div>
-        <div className="col-start-12 col-span-2">
-          <SalaryCalc workHoursInfo={hours}
-            userSetting={userSetting}
-            daysArray={daysArrayFromChild}
-          />
-        </div>
+      <div className="col-span-8 col-start-2 col-end-12">
+        <CalendarComponent
+          ref={calendarRef}
+          workHoursInfo={setHours}
+          daysArrayFromChild={handleDaysArrayFromChild}
+          onRefresh={refreshAllData}
+        />
+      </div>
+      <div className="col-start-12 col-span-2">
+        <SalaryCalc
+          mode={mode}
+          setMode={setMode}
+          setIsPopUpOpen={setIsPopUpOpen}
+          workHoursInfo={hours}
+          userSetting={userSetting}
+          daysArray={daysArrayFromChild}
+        />
       </div>
     </div>
-  );
+  </div>
+);
 };

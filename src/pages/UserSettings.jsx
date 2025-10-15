@@ -1,7 +1,8 @@
 import axios from 'axios';
 import React, { useEffect, useState } from 'react'
 
-const UserSettings = ({ isOpen, onClose, userRate, onSettingsSaved}) => {
+
+const UserSettings = ({ isOpen, onClose, userRate, onSettingsSaved, mode }) => {
     const [typeOfJobTime, setTypeOfJobTime] = useState(null)
     const [rateType, setRateType] = useState(null)
     const [over26, setOver26] = useState(false)
@@ -11,13 +12,16 @@ const UserSettings = ({ isOpen, onClose, userRate, onSettingsSaved}) => {
     const [checked, setChecked] = useState(false)
     const [constAddons, setConstAddons] = useState(0)
     const date = new Date(localStorage.getItem("date"));
-    const month = date.getMonth()+1;
+    const month = date.getMonth() + 1;
     const year = date.getFullYear();
+    const userID = localStorage.getItem("userID");
 
 
     useEffect(() => {
         setRate(userRate)
     }, [userRate])
+    console.log(mode)
+
     const handleSubmit = async (e) => {
         e.preventDefault()
         if (typeOfJobTime === null || rateType === null || over26 === null || vacationDays === 0 || rate === 0) {
@@ -25,72 +29,57 @@ const UserSettings = ({ isOpen, onClose, userRate, onSettingsSaved}) => {
             return;
         }
 
-        const userID = localStorage.getItem("userID");
 
-        if (checked) {
-            try {
-                const response = await axios.put(
-                    `http://localhost:3000/api/update-settings/${userID}`,
-                    {
-                        typeOfJobTime: typeOfJobTime,
-                        rateType: rateType,
-                        over26: over26,
-                        vacationDays: vacationDays,
-                        rate: rate,
-                        nightAddon: nightAddon,
-                        constAddons: constAddons,
-                    }
-                );
-                console.log(response.data.message);
-                if (onSettingsSaved) onSettingsSaved()
-                onClose();
-            } catch (error) {
-                console.error("Błąd podczas zapisywania stawki:", error);
-            }
-        } else {
-            try {
-                const response = await axios.put(
-                    `http://localhost:3000/api/update-settings/${userID}`,
-                    {
-                        typeOfJobTime: typeOfJobTime,
-                        rateType: rateType,
-                        over26: over26,
-                        vacationDays: vacationDays,
-                        rate: rate,
-                        nightAddon: 0,
-                        constAddons: constAddons,
-                    }
-                );
-                console.log(response.data.message);
-                if (onSettingsSaved) onSettingsSaved()
-                onClose();
-            } catch (error) {
-                console.error("Błąd podczas zapisywania stawki:", error);
-            }
+        const payload = {
+            typeOfJobTime,
+            rateType,
+            over26,
+            vacationDays,
+            rate,
+            nightAddon,
+            constAddons,
+        };
+
+        const endpoint =
+            mode === "monthly"
+                ? `http://localhost:3000/api/update-monthly-settings/${userID}/${year}/${month}`
+                : `http://localhost:3000/api/update-settings/${userID}`;
+
+        try {
+            const response = await axios.put(endpoint, payload);
+            console.log(response.data.message);
+            if (onSettingsSaved) onSettingsSaved();
+            onClose();
+        } catch (error) {
+            console.error("Błąd podczas zapisywania ustawień:", error);
         }
 
     };
 
     useEffect(() => {
-  const userID = localStorage.getItem("userID");
-  if (isOpen && userID) {
-    axios
-      .get(`http://localhost:3000/api/get-settings/${userID}`)
-      .then(res => {
-        const s = res.data;
-        setTypeOfJobTime(s.typeOfJobTime);
-        setRateType(s.rateType);
-        setOver26(s.over26);
-        setVacationDays(s.vacationDays);
-        setRate(s.rate);
-        setNightAddon(s.nightAddon);
-        setConstAddons(s.constAddons);
-      })
-      .catch(err => {
-        console.log("Brak istniejących ustawień lub błąd:", err);
-      });
-  }
-}, [isOpen]);
+        if (!isOpen || !userID) return;
+
+        const endpoint =
+            mode === "monthly"
+                ? `http://localhost:3000/api/get-monthly-settings/${userID}/${year}/${month}`
+                : `http://localhost:3000/api/get-settings/${userID}`;
+
+        axios
+            .get(endpoint)
+            .then((res) => {
+                const s = res.data;
+                setTypeOfJobTime(s.typeOfJobTime);
+                setRateType(s.rateType);
+                setOver26(s.over26);
+                setVacationDays(s.vacationDays);
+                setRate(s.rate);
+                setNightAddon(s.nightAddon);
+                setConstAddons(s.constAddons);
+            })
+            .catch((err) => console.log("Błąd przy ładowaniu ustawień:", err));
+    }, [isOpen, mode, userID, year, month]);
+
+
 
 
     if (!isOpen) return null;
@@ -106,7 +95,15 @@ const UserSettings = ({ isOpen, onClose, userRate, onSettingsSaved}) => {
                 className="flex flex-col bg-white rounded-lg shadow-lg p-6 relative"
                 onClick={(e) => e.stopPropagation()}
             >
-                <div className="flex justify-end">
+                <div className="flex justify-between items-center">
+                
+                    
+                    {mode === "main" ?
+                        <span className='text-xl font-medium'>Ustawienia ogólne</span>
+                        :
+                        <span className='text-xl font-medium'>Ustawienia dla {month}/{year}</span>
+                    }
+
                     <button
                         onClick={() => {
                             onClose();
@@ -118,54 +115,54 @@ const UserSettings = ({ isOpen, onClose, userRate, onSettingsSaved}) => {
                 </div>
                 <form onSubmit={handleSubmit} className='grid mt-4'>
                     <div className='mb-4'>
-                        <ul class="items-center w-full text-sm font-medium text-gray-900 bg-white border border-gray-200 rounded-lg sm:flex dark:bg-gray-700 dark:border-gray-600 dark:text-white">
-                            <li class="w-full border-b border-gray-200 sm:border-b-0 sm:border-r dark:border-gray-600">
-                                <div class="flex items-center ps-3">
-                                    <input id="vue-checkbox-list" type="checkbox" value="" class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded-sm focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-700 dark:focus:ring-offset-gray-700 focus:ring-2 dark:bg-gray-600 dark:border-gray-500"
+                        <ul className="items-center w-full text-sm font-medium text-gray-900 bg-white border border-gray-200 rounded-lg sm:flex dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                            <li className="w-full border-b border-gray-200 sm:border-b-0 sm:border-r dark:border-gray-600">
+                                <div className="flex items-center ps-3">
+                                    <input id="vue-checkbox-list" type="checkbox" value="" className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded-sm focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-700 dark:focus:ring-offset-gray-700 focus:ring-2 dark:bg-gray-600 dark:border-gray-500"
                                         checked={typeOfJobTime === "1/1"}
                                         onChange={() => setTypeOfJobTime("1/1")}
                                     />
-                                    <label for="vue-checkbox-list" class="w-full py-3 ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">Pełny etat</label>
+                                    <label htmlFor="vue-checkbox-list" className="w-full py-3 ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">Pełny etat</label>
                                 </div>
                             </li>
-                            <li class="w-full border-b border-gray-200 sm:border-b-0 sm:border-r dark:border-gray-600">
-                                <div class="flex items-center ps-3">
-                                    <input id="react-checkbox-list" type="checkbox" value="" class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded-sm focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-700 dark:focus:ring-offset-gray-700 focus:ring-2 dark:bg-gray-600 dark:border-gray-500"
+                            <li className="w-full border-b border-gray-200 sm:border-b-0 sm:border-r dark:border-gray-600">
+                                <div className="flex items-center ps-3">
+                                    <input id="react-checkbox-list" type="checkbox" value="" className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded-sm focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-700 dark:focus:ring-offset-gray-700 focus:ring-2 dark:bg-gray-600 dark:border-gray-500"
                                         checked={typeOfJobTime === "1/2"}
                                         onChange={() => setTypeOfJobTime("1/2")}
                                     />
-                                    <label for="react-checkbox-list" class="w-full py-3 ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">1/2 etatu</label>
+                                    <label htmlFor="react-checkbox-list" className="w-full py-3 ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">1/2 etatu</label>
                                 </div>
                             </li>
-                            <li class="w-full border-b border-gray-200 sm:border-b-0 sm:border-r dark:border-gray-600">
-                                <div class="flex items-center ps-3">
-                                    <input id="vue-checkbox-list" type="checkbox" value="" class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded-sm focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-700 dark:focus:ring-offset-gray-700 focus:ring-2 dark:bg-gray-600 dark:border-gray-500"
+                            <li className="w-full border-b border-gray-200 sm:border-b-0 sm:border-r dark:border-gray-600">
+                                <div className="flex items-center ps-3">
+                                    <input id="vue-checkbox-list" type="checkbox" value="" className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded-sm focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-700 dark:focus:ring-offset-gray-700 focus:ring-2 dark:bg-gray-600 dark:border-gray-500"
                                         checked={typeOfJobTime === "1/4"}
                                         onChange={() => setTypeOfJobTime("1/4")}
                                     />
-                                    <label for="vue-checkbox-list" class="w-full py-3 ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">1/4 etatu</label>
+                                    <label htmlFor="vue-checkbox-list" className="w-full py-3 ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">1/4 etatu</label>
                                 </div>
                             </li>
                         </ul>
                     </div>
                     <div className='mb-4'>
-                        <ul class="items-center w-full text-sm font-medium text-gray-900 bg-white border border-gray-200 rounded-lg sm:flex dark:bg-gray-700 dark:border-gray-600 dark:text-white">
-                            <li class="w-full border-b border-gray-200 sm:border-b-0 sm:border-r dark:border-gray-600">
-                                <div class="flex items-center ps-3">
-                                    <input id="vue-checkbox-list" type="checkbox" value="" class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded-sm focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-700 dark:focus:ring-offset-gray-700 focus:ring-2 dark:bg-gray-600 dark:border-gray-500"
+                        <ul className="items-center w-full text-sm font-medium text-gray-900 bg-white border border-gray-200 rounded-lg sm:flex dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                            <li className="w-full border-b border-gray-200 sm:border-b-0 sm:border-r dark:border-gray-600">
+                                <div className="flex items-center ps-3">
+                                    <input id="vue-checkbox-list" type="checkbox" value="" className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded-sm focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-700 dark:focus:ring-offset-gray-700 focus:ring-2 dark:bg-gray-600 dark:border-gray-500"
                                         checked={rateType === "month"}
                                         onChange={() => setRateType("month")}
                                     />
-                                    <label for="vue-checkbox-list" class="w-full py-3 ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">Stawka miesięczna</label>
+                                    <label htmlFor="vue-checkbox-list" className="w-full py-3 ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">Stawka miesięczna</label>
                                 </div>
                             </li>
-                            <li class="w-full border-b border-gray-200 sm:border-b-0 sm:border-r dark:border-gray-600">
-                                <div class="flex items-center ps-3">
-                                    <input id="react-checkbox-list" type="checkbox" value="" class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded-sm focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-700 dark:focus:ring-offset-gray-700 focus:ring-2 dark:bg-gray-600 dark:border-gray-500"
+                            <li className="w-full border-b border-gray-200 sm:border-b-0 sm:border-r dark:border-gray-600">
+                                <div className="flex items-center ps-3">
+                                    <input id="react-checkbox-list" type="checkbox" value="" className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded-sm focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-700 dark:focus:ring-offset-gray-700 focus:ring-2 dark:bg-gray-600 dark:border-gray-500"
                                         checked={rateType === "hour"}
                                         onChange={() => setRateType("hour")}
                                     />
-                                    <label for="react-checkbox-list" class="w-full py-3 ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">Stawka godzinowa</label>
+                                    <label htmlFor="react-checkbox-list" className="w-full py-3 ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">Stawka godzinowa</label>
                                 </div>
                             </li>
                         </ul>
@@ -173,14 +170,14 @@ const UserSettings = ({ isOpen, onClose, userRate, onSettingsSaved}) => {
                     <div className='mb-4 flex justify-between'>
                         <span>Czy posiadasz mniej niż 26 lat?</span>
                         <div className='flex items-center '>
-                            <input id="react-checkbox-list" type="checkbox" value="" class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded-sm focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-700 dark:focus:ring-offset-gray-700 focus:ring-2 dark:bg-gray-600 dark:border-gray-500"
+                            <input id="react-checkbox-list" type="checkbox" value="" className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded-sm focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-700 dark:focus:ring-offset-gray-700 focus:ring-2 dark:bg-gray-600 dark:border-gray-500"
                                 checked={over26}
                                 onChange={() => setOver26(true)}
                             />
                             <label htmlFor="react-checkbox-list" className='ml-2'>Tak</label>
                         </div>
                         <div className='flex items-center '>
-                            <input id="react-checkbox-list" type="checkbox" value="" class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded-sm focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-700 dark:focus:ring-offset-gray-700 focus:ring-2 dark:bg-gray-600 dark:border-gray-500"
+                            <input id="react-checkbox-list" type="checkbox" value="" className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded-sm focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-700 dark:focus:ring-offset-gray-700 focus:ring-2 dark:bg-gray-600 dark:border-gray-500"
                                 checked={!over26}
                                 onChange={() => setOver26(false)}
                             />
@@ -205,7 +202,7 @@ const UserSettings = ({ isOpen, onClose, userRate, onSettingsSaved}) => {
                     }
                     <div className='flex items-center justify-between mb-4'>
                         <div className='flex items-center'>
-                            <input id="react-checkbox-list" type="checkbox" value="" class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded-sm focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-700 dark:focus:ring-offset-gray-700 focus:ring-2 dark:bg-gray-600 dark:border-gray-500 mr-2"
+                            <input id="react-checkbox-list" type="checkbox" value="" className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded-sm focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-700 dark:focus:ring-offset-gray-700 focus:ring-2 dark:bg-gray-600 dark:border-gray-500 mr-2"
                                 checked={checked}
                                 onChange={(e) => {
                                     setChecked(e.target.checked);
