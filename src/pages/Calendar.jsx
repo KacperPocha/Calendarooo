@@ -25,6 +25,7 @@ export const Calendar = () => {
   const date = new Date(localStorage.getItem("date"));
   const month = date.getMonth() + 1;
   const year = date.getFullYear();
+  const [rawData, setRawData] = useState([])
   const navigate = useNavigate()
 
   useEffect(() => {
@@ -82,8 +83,6 @@ useEffect(() => {
       console.error('Błąd przy pobieraniu ustawień miesięcznych:', err)
     }
   }
-
-
 
 
 
@@ -147,6 +146,7 @@ return (
       </div>
       <div className="col-span-8 col-start-2 col-end-12">
         <CalendarComponent
+          setRawData={setRawData}
           ref={calendarRef}
           workHoursInfo={setHours}
           daysArrayFromChild={handleDaysArrayFromChild}
@@ -155,6 +155,7 @@ return (
       </div>
       <div className="col-start-12 col-span-2">
         <SalaryCalc
+          rawData={rawData}
           mode={mode}
           setMode={setMode}
           setIsPopUpOpen={setIsPopUpOpen}

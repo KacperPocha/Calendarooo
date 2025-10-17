@@ -57,8 +57,8 @@ const userSettings = sequelize.define("user_settings", {
     type: DataTypes.STRING,
     allowNull: false,
   },
-  over26: {
-    type: DataTypes.BOOLEAN,
+  taxReliefType: {
+    type: DataTypes.STRING,
     defaultValue: false,
   },
   vacationDays: {
@@ -94,37 +94,43 @@ const work_hours = sequelize.define("work_hour", {
   nadgodziny50: DataTypes.INTEGER,
   nadgodziny100: DataTypes.INTEGER,
   nieobecnosc: DataTypes.STRING,
-  stawkaBrutto: DataTypes.FLOAT,
   noteTitle: DataTypes.STRING,
   noteDescription: DataTypes.STRING,
-})
+});
 
-const monthly_settings = sequelize.define("monthly_settings", {
-   id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
-  user_id: {
-    type: DataTypes.INTEGER,
-    references: { model: users, key: "user_id" },
-    allowNull: false,
-    onDelete: "CASCADE",
+const monthly_settings = sequelize.define(
+  "monthly_settings",
+  {
+    id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
+    user_id: {
+      type: DataTypes.INTEGER,
+      references: { model: users, key: "user_id" },
+      allowNull: false,
+      onDelete: "CASCADE",
+    },
+    year: DataTypes.INTEGER,
+    month: DataTypes.INTEGER,
+
+    typeOfJobTime: DataTypes.STRING,
+    rateType: DataTypes.STRING,
+    taxReliefType: DataTypes.STRING,
+    vacationDays: DataTypes.INTEGER,
+    rate: DataTypes.FLOAT,
+    nightAddon: DataTypes.FLOAT,
+    constAddons: DataTypes.FLOAT,
   },
-  year: DataTypes.INTEGER,
-  month: DataTypes.INTEGER,
-
-
-  typeOfJobTime: DataTypes.STRING,
-  rateType: DataTypes.STRING,
-  over26: DataTypes.BOOLEAN,
-  vacationDays: DataTypes.INTEGER,
-  rate: DataTypes.FLOAT,
-  nightAddon: DataTypes.FLOAT,
-  constAddons: DataTypes.FLOAT,
-}, { timestamps: true });
-
-
+  { timestamps: true }
+);
 
 users.hasMany(work_hours, { foreignKey: "user_id" });
 work_hours.belongsTo(users, { foreignKey: "user_id" });
 
 sequelize.sync();
 
-module.exports = { sequelize, users, work_hours, userSettings, monthly_settings };
+module.exports = {
+  sequelize,
+  users,
+  work_hours,
+  userSettings,
+  monthly_settings,
+};

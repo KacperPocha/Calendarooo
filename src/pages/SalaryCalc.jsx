@@ -2,21 +2,22 @@ import axios from 'axios'
 import React, { useEffect, useState } from 'react'
 
 
-export const SalaryCalc = ({ workHoursInfo, daysArray, userSetting, setIsPopUpOpen, setMode, mode }) => {
+export const SalaryCalc = ({ workHoursInfo, daysArray, userSetting, setIsPopUpOpen, setMode, rawData }) => {
   const [workHours, setWorkHours] = useState([])
   const [settings, setSettings] = useState({})
   const [rate, setRate] = useState(0)
   const [daysArrayParent, setDaysArray] = useState([])
   const [hoursToComplete, setHoursToComplete] = useState(0)
   const totalHours = (Object.values(workHours).reduce((sum, value) => sum + value, 0))
-  const stawkaBruttoMies = Math.round((settings?.rate / (hoursToComplete / totalHours)) * 100) / 100
-  const stawkaBruttoGodz = Math.round(settings?.rate * totalHours)
+  const stawkaBruttoMies = Math.round((settings?.rate / (hoursToComplete / totalHours)) * 100 / 100 + settings?.constAddons);
+  const stawkaBruttoGodz = Math.round(settings?.rate * totalHours + settings?.constAddons);
 
-    useEffect(() => {
+
+  useEffect(() => {
     setSettings(userSetting)
   }, [userSetting])
 
- useEffect(() => {
+  useEffect(() => {
     setDaysArray(daysArray)
     const workDays = daysArray.filter(day => !day.isOtherMonth && !day.isWeekend && !day.isHoliday).length
     setHoursToComplete(workDays * 8)
@@ -27,7 +28,7 @@ export const SalaryCalc = ({ workHoursInfo, daysArray, userSetting, setIsPopUpOp
   }, [workHoursInfo])
 
 
- 
+
 
 
   return (

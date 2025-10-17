@@ -5,7 +5,7 @@ import React, { useEffect, useState } from 'react'
 const UserSettings = ({ isOpen, onClose, userRate, onSettingsSaved, mode }) => {
     const [typeOfJobTime, setTypeOfJobTime] = useState(null)
     const [rateType, setRateType] = useState(null)
-    const [over26, setOver26] = useState(false)
+    const [taxReliefType, setTaxReliefType] = useState(false)
     const [vacationDays, setVacationDays] = useState(0)
     const [rate, setRate] = useState(0)
     const [nightAddon, setNightAddon] = useState(0)
@@ -20,11 +20,11 @@ const UserSettings = ({ isOpen, onClose, userRate, onSettingsSaved, mode }) => {
     useEffect(() => {
         setRate(userRate)
     }, [userRate])
-    console.log(mode)
+
 
     const handleSubmit = async (e) => {
         e.preventDefault()
-        if (typeOfJobTime === null || rateType === null || over26 === null || vacationDays === 0 || rate === 0) {
+        if (typeOfJobTime === null || rateType === null || taxReliefType === null || vacationDays === 0 || rate === 0) {
             alert("Wypełnij wszystkie dane")
             return;
         }
@@ -33,7 +33,7 @@ const UserSettings = ({ isOpen, onClose, userRate, onSettingsSaved, mode }) => {
         const payload = {
             typeOfJobTime,
             rateType,
-            over26,
+            taxReliefType,
             vacationDays,
             rate,
             nightAddon,
@@ -70,7 +70,7 @@ const UserSettings = ({ isOpen, onClose, userRate, onSettingsSaved, mode }) => {
                 const s = res.data;
                 setTypeOfJobTime(s.typeOfJobTime);
                 setRateType(s.rateType);
-                setOver26(s.over26);
+                setTaxReliefType(s.taxReliefType);
                 setVacationDays(s.vacationDays);
                 setRate(s.rate);
                 setNightAddon(s.nightAddon);
@@ -96,8 +96,8 @@ const UserSettings = ({ isOpen, onClose, userRate, onSettingsSaved, mode }) => {
                 onClick={(e) => e.stopPropagation()}
             >
                 <div className="flex justify-between items-center">
-                
-                    
+
+
                     {mode === "main" ?
                         <span className='text-xl font-medium'>Ustawienia ogólne</span>
                         :
@@ -167,22 +167,19 @@ const UserSettings = ({ isOpen, onClose, userRate, onSettingsSaved, mode }) => {
                             </li>
                         </ul>
                     </div>
-                    <div className='mb-4 flex justify-between'>
-                        <span>Czy posiadasz mniej niż 26 lat?</span>
-                        <div className='flex items-center '>
-                            <input id="react-checkbox-list" type="checkbox" value="" className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded-sm focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-700 dark:focus:ring-offset-gray-700 focus:ring-2 dark:bg-gray-600 dark:border-gray-500"
-                                checked={over26}
-                                onChange={() => setOver26(true)}
-                            />
-                            <label htmlFor="react-checkbox-list" className='ml-2'>Tak</label>
-                        </div>
-                        <div className='flex items-center '>
-                            <input id="react-checkbox-list" type="checkbox" value="" className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded-sm focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-700 dark:focus:ring-offset-gray-700 focus:ring-2 dark:bg-gray-600 dark:border-gray-500"
-                                checked={!over26}
-                                onChange={() => setOver26(false)}
-                            />
-                            <label htmlFor="react-checkbox-list" className='ml-2'>Nie</label>
-                        </div>
+                    <div className='mb-4 flex justify-between items-center'>
+                        <label for="small" class="mb-2 dark:text-white">Ulgi podatkowe:</label>
+                        <select id="small" class="p-2 px-6 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                            onChange={(e) => setTaxReliefType(e.target.value)}
+                            value={taxReliefType}
+                        >
+                            <option value="brak">Brak</option>
+                            <option value="mlody">Poniżej 26 r.ż.</option>
+                            <option value="emeryt">Emeryt</option>
+                            <option value="powrot">Powrót z zagranicy</option>
+                            <option value="rodzina4plus">Rodzina 4+</option>
+                        </select>
+
 
                     </div>
                     <div className='mb-4 flex justify-between'>

@@ -6,7 +6,7 @@ import io from 'socket.io-client';
 
 const socket = io('http://localhost:3000');
 
-export const CalendarComponent = forwardRef(({ workHoursInfo, daysArrayFromChild, onRefresh }, ref) => {
+export const CalendarComponent = forwardRef(({ workHoursInfo, daysArrayFromChild, onRefresh, setRawData }, ref) => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [workHours, setWorkHours] = useState([]);
   const [selectedDate, setSelectedDate] = useState("");
@@ -210,6 +210,7 @@ useEffect(() => {
         setDataDay(response.data);
         setWorkHours(formattedData);
         workHoursInfo(formattedData);
+        setRawData(response.data)
         if (shouldRefreshOthers && onRefresh) {
           onRefresh();
         }
@@ -221,7 +222,6 @@ useEffect(() => {
       setLoading(false);
     }
   };
-
 
   const handleRefreshAfterUpdate = async () => {
     await fetchWorkHours(false);
@@ -238,7 +238,6 @@ useEffect(() => {
     fetchWorkHours(false);
   }, [currentDate]);
 
-  // Pierwsze wywołanie
   useEffect(() => {
     fetchWorkHours(false);
   }, []);
@@ -252,9 +251,7 @@ useEffect(() => {
     }
   };
 
-  useEffect(() => {
-    console.log("loading:", loading);
-  }, [loading]);
+
 
   return (
     <div className="p-4  mx-auto">
