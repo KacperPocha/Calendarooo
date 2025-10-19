@@ -9,7 +9,12 @@ const UserSettings = ({ isOpen, onClose, userRate, onSettingsSaved, mode }) => {
     const [vacationDays, setVacationDays] = useState(0)
     const [rate, setRate] = useState(0)
     const [nightAddon, setNightAddon] = useState(0)
-    const [checked, setChecked] = useState(false)
+    const [checkedNightAddon, setCheckedNightAddon] = useState(false)
+    const [PPK, setPPK] = useState(0)
+    const [checkedPPK, setCheckedPPK] = useState(false)
+    const [tradeUnions, setTradeUnions] = useState(0)
+    const [checkedTradeUnions, setCheckedTradeUnions] = useState(false)
+    const [otherAddons, setOtherAddons] = useState(0)
     const [constAddons, setConstAddons] = useState(0)
     const date = new Date(localStorage.getItem("date"));
     const month = date.getMonth() + 1;
@@ -34,9 +39,12 @@ const UserSettings = ({ isOpen, onClose, userRate, onSettingsSaved, mode }) => {
             typeOfJobTime,
             rateType,
             taxReliefType,
+            PPK,
+            tradeUnions,
             vacationDays,
             rate,
             nightAddon,
+            otherAddons,
             constAddons,
         };
 
@@ -72,8 +80,11 @@ const UserSettings = ({ isOpen, onClose, userRate, onSettingsSaved, mode }) => {
                 setRateType(s.rateType);
                 setTaxReliefType(s.taxReliefType);
                 setVacationDays(s.vacationDays);
+                setPPK(s.PPK);
+                setTradeUnions(s.tradeUnions);
                 setRate(s.rate);
                 setNightAddon(s.nightAddon);
+                setOtherAddons(s.otherAddons)
                 setConstAddons(s.constAddons);
             })
             .catch((err) => console.log("Błąd przy ładowaniu ustawień:", err));
@@ -200,22 +211,58 @@ const UserSettings = ({ isOpen, onClose, userRate, onSettingsSaved, mode }) => {
                     <div className='flex items-center justify-between mb-4'>
                         <div className='flex items-center'>
                             <input id="react-checkbox-list" type="checkbox" value="" className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded-sm focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-700 dark:focus:ring-offset-gray-700 focus:ring-2 dark:bg-gray-600 dark:border-gray-500 mr-2"
-                                checked={checked}
+                                checked={checkedNightAddon}
                                 onChange={(e) => {
-                                    setChecked(e.target.checked);
+                                    setCheckedNightAddon(e.target.checked);
                                     if (e.target.checked) setNightAddon(0);
                                 }}
                             />
                             <label htmlFor="rate" className='mr-2'>Dodatek Nocny [%]: </label>
                         </div>
 
-                        <input type="number" name="rate" className='border-2 border-black' value={nightAddon} onChange={(e) => setNightAddon(Number(e.target.value))} disabled={!checked} />
+                        <input type="number" name="rate" className='border-2 border-black' value={nightAddon} onChange={(e) => setNightAddon(Number(e.target.value))} disabled={!checkedNightAddon} />
+                    </div>
+                       <div className='flex items-center justify-between mb-4'>
+                        <div className='flex items-center'>
+                            <input id="react-checkbox-list" type="checkbox" value="" className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded-sm focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-700 dark:focus:ring-offset-gray-700 focus:ring-2 dark:bg-gray-600 dark:border-gray-500 mr-2"
+                                checked={checkedPPK}
+                                onChange={(e) => {
+                                    setCheckedPPK(e.target.checked);
+                                    if (e.target.checked) setPPK(0);
+                                }}
+                            />
+                            <label htmlFor="rate" className='mr-2'>Składka PPK [%]: </label>
+                        </div>
+
+                        <input type="number" name="rate" className='border-2 border-black' value={PPK} onChange={(e) => setPPK(Number(e.target.value))} disabled={!checkedPPK} />
+                    </div>
+                       <div className='flex items-center justify-between mb-4'>
+                        <div className='flex items-center'>
+                            <input id="react-checkbox-list" type="checkbox" value="" className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded-sm focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-700 dark:focus:ring-offset-gray-700 focus:ring-2 dark:bg-gray-600 dark:border-gray-500 mr-2"
+                                checked={checkedTradeUnions}
+                                onChange={(e) => {
+                                    setCheckedTradeUnions(e.target.checked);
+                                    if (e.target.checked) setTradeUnions(0);
+                                }}
+                            />
+                            <label htmlFor="rate" className='mr-2'>Składki związkowe [%]: </label>
+                        </div>
+
+                        <input type="number" name="rate" className='border-2 border-black' value={tradeUnions} onChange={(e) => setTradeUnions(Number(e.target.value))} disabled={!checkedTradeUnions} />
                     </div>
 
                     <div className='flex justify-between'>
                         <label htmlFor="rate" className='mr-2'>Suma stałych dodatków [brutto zł]: </label>
                         <input type="number" name="rate" className='border-2 border-black' value={constAddons} onChange={(e) => setConstAddons(Number(e.target.value))} />
                     </div>
+                    {mode === "monthly" ? 
+                     <div className='flex justify-between mt-4'>
+                        <label htmlFor="rate" className='mr-2'>Inne dodatki w tym miesiącu [brutto zł]: </label>
+                        <input type="number" name="rate" className='border-2 border-black' value={otherAddons} onChange={(e) => setOtherAddons(Number(e.target.value))} />
+                    </div>
+                    :
+                    null}
+                     
                     <button className='bg-blue-500 text-white px-4 py-2 rounded w-24 mt-8' type="submit">
                         Zapisz
                     </button>

@@ -61,6 +61,14 @@ const userSettings = sequelize.define("user_settings", {
     type: DataTypes.STRING,
     defaultValue: false,
   },
+  PPK: {
+    type: DataTypes.FLOAT,
+    defaultValue: false,
+  },
+  tradeUnions: {
+    type: DataTypes.FLOAT,
+    defaultValue: false,
+  },
   vacationDays: {
     type: DataTypes.INTEGER,
     defaultValue: 20,
@@ -93,6 +101,7 @@ const work_hours = sequelize.define("work_hour", {
   godzinyPrzepracowane: DataTypes.INTEGER,
   nadgodziny50: DataTypes.INTEGER,
   nadgodziny100: DataTypes.INTEGER,
+  silaWyzsza: DataTypes.FLOAT,
   nieobecnosc: DataTypes.STRING,
   noteTitle: DataTypes.STRING,
   noteDescription: DataTypes.STRING,
@@ -114,9 +123,12 @@ const monthly_settings = sequelize.define(
     typeOfJobTime: DataTypes.STRING,
     rateType: DataTypes.STRING,
     taxReliefType: DataTypes.STRING,
+    PPK: DataTypes.FLOAT,
+    tradeUnions: DataTypes.FLOAT,
     vacationDays: DataTypes.INTEGER,
     rate: DataTypes.FLOAT,
     nightAddon: DataTypes.FLOAT,
+    otherAddons: {type: DataTypes.FLOAT, defaultValue:0},
     constAddons: DataTypes.FLOAT,
   },
   { timestamps: true }

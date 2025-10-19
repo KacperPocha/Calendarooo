@@ -6,6 +6,7 @@ const PopUp = ({ isOpen, onClose, selectedDate, setSelectedDate, fetchWorkHours,
   const [workHours, setWorkHours] = useState(0);
   const [nadgodziny50, setnadgodziny50] = useState(0);
   const [nadgodziny100, setnadgodziny100] = useState(0);
+  const [silaWyzsza, setSilaWyzsza] = useState(0)
   const [nieobecnosc, setnieobecnosc] = useState(null);
   const [selectDisabled, setSelectDisabled] = useState(false);
   const [notes, setNotes] = useState(false);
@@ -41,7 +42,8 @@ const PopUp = ({ isOpen, onClose, selectedDate, setSelectedDate, fetchWorkHours,
       setWorkHours(response.data?.godzinyPrzepracowane || 0);
       setnadgodziny50(response.data?.nadgodziny50 || 0);
       setnadgodziny100(response.data?.nadgodziny100 || 0);
-      setnieobecnosc(response.data?.nieobecnosc || null);
+      setSilaWyzsza(response.data?.silaWyzsza || 0);
+      setnieobecnosc(response.data?.nieobecnosc === "null" ? null : response.data?.nieobecnosc || null);
       setNoteTitle(response.data?.noteTitle ?? null);
       setNoteDescription(response.data?.noteDescription ?? null);
     } catch (error) {
@@ -68,6 +70,7 @@ const PopUp = ({ isOpen, onClose, selectedDate, setSelectedDate, fetchWorkHours,
       parsedWorkHours !== workHoursData?.godzinyPrzepracowane ||
       nadgodziny50 !== workHoursData?.nadgodziny50 ||
       nadgodziny100 !== workHoursData?.nadgodziny100 ||
+      silaWyzsza !== workHoursData?.silaWyzsza ||
       nieobecnosc !== workHoursData?.nieobecnosc ||
       noteTitle !== workHoursData?.noteTitle ||
       noteDescription !== workHoursData?.noteDescription
@@ -81,6 +84,7 @@ const PopUp = ({ isOpen, onClose, selectedDate, setSelectedDate, fetchWorkHours,
             godzinyPrzepracowane: parsedWorkHours,
             nadgodziny50: nadgodziny50,
             nadgodziny100: nadgodziny100,
+            silaWyzsza: silaWyzsza,
             nieobecnosc: nieobecnosc,
             noteTitle: isNoteEmpty ? null : noteTitle,
             noteDescription: isNoteEmpty ? null : noteDescription
@@ -90,6 +94,7 @@ const PopUp = ({ isOpen, onClose, selectedDate, setSelectedDate, fetchWorkHours,
         setWorkHours(parsedWorkHours);
         setnadgodziny50(nadgodziny50);
         setnadgodziny100(nadgodziny100);
+        setSilaWyzsza(silaWyzsza)
         setnieobecnosc(nieobecnosc);
         setNoteTitle(noteTitle);
         setNoteDescription(noteDescription);
@@ -107,15 +112,15 @@ const PopUp = ({ isOpen, onClose, selectedDate, setSelectedDate, fetchWorkHours,
       onClose();
     }
   };
-
+  console.log(nieobecnosc)
   useEffect(() => {
     if (workHours === 0 && nadgodziny50 === 0 && nadgodziny100 === 0) {
       setSelectDisabled(false);
     } else {
-      setnieobecnosc("");
       setSelectDisabled(true);
     }
   }, [workHours, nadgodziny50, nadgodziny100]);
+
 
   const handleBlur = (setter, value) => {
     setter(value === "" ? 0 : value);
@@ -194,17 +199,30 @@ const PopUp = ({ isOpen, onClose, selectedDate, setSelectedDate, fetchWorkHours,
               </label>
               <select
                 className="w-full bg-transparent placeholder:text-slate-400 text-slate-700 text-sm border border-slate-200 rounded-md px-3 py-2"
-                value={nieobecnosc}
-                onChange={(e) => setnieobecnosc(e.target.value)}
-                disabled={selectDisabled}
+                value={nieobecnosc ?? ""}
+                onChange={(e) => setnieobecnosc(e.target.value || null)}
               >
-                <option value="null">-</option>
-                <option value="L4">L4</option>
-                <option value="Krwiodastwo">Krwiodastwo</option>
+                <option value="">-</option>
+                <option disabled={selectDisabled} value="L4">L4</option>
+                <option disabled={selectDisabled} value="Krwiodastwo">Krwiodastwo</option>
                 <option value="Siła wyższa">Siła wyższa</option>
-                <option value="Urlop">Urlop</option>
+                <option disabled={selectDisabled} value="Urlop">Urlop</option>
               </select>
+
             </div>
+            {nieobecnosc === "Siła wyższa" ? 
+            <div className="mt-4">
+              <label className="block mb-2 text-sm text-slate-600">Siła wyższa:</label>
+              <input
+                className="w-full bg-transparent placeholder:text-slate-400 text-slate-700 text-sm border border-slate-200 rounded-md px-3 py-2"
+                type="number"
+                value={silaWyzsza === null ? 0 : silaWyzsza}
+                onChange={(e) => setSilaWyzsza(e.target.value)}
+                onBlur={(e) => handleBlur(setSilaWyzsza, e.target.value)}
+              />
+            </div>
+              :
+              null}
             <div>
               {notes ? (
                 <span

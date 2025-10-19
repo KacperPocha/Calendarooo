@@ -129,6 +129,7 @@ router.put("/update-work-hours/:userID/:date", async (req, res) => {
     godzinyPrzepracowane,
     nadgodziny50,
     nadgodziny100,
+    silaWyzsza,
     nieobecnosc,
     noteTitle,
     noteDescription,
@@ -145,6 +146,7 @@ router.put("/update-work-hours/:userID/:date", async (req, res) => {
         godzinyPrzepracowane,
         nadgodziny50,
         nadgodziny100,
+        silaWyzsza,
         nieobecnosc,
         noteTitle,
         noteDescription,
@@ -156,6 +158,7 @@ router.put("/update-work-hours/:userID/:date", async (req, res) => {
       godzinyPrzepracowane,
       nadgodziny50,
       nadgodziny100,
+      silaWyzsza,
       nieobecnosc,
       noteTitle,
       noteDescription,
@@ -187,7 +190,8 @@ router.get("/get-settings/:userID", async (req, res) => {
   try {
     const { userID } = req.params;
     const settings = await userSettings.findOne({ where: { user_id: userID } });
-    if (!settings) return res.status(404).json({ message: "Brak ustawień dla użytkownika" });
+    if (!settings)
+      return res.status(404).json({ message: "Brak ustawień dla użytkownika" });
     res.json(settings);
   } catch (err) {
     console.error(err);
@@ -203,10 +207,13 @@ router.put("/update-settings/:userID", async (req, res) => {
       typeOfJobTime,
       rateType,
       taxReliefType,
+      nightAddon,
+      PPK,
+      tradeUnions,
       vacationDays,
       rate,
       constAddons,
-      nightAddon,
+      otherAddons,
     } = req.body;
 
     let settings = await userSettings.findOne({ where: { user_id: userID } });
@@ -217,10 +224,13 @@ router.put("/update-settings/:userID", async (req, res) => {
         typeOfJobTime,
         rateType,
         taxReliefType,
+        nightAddon,
+        PPK,
+        tradeUnions,
         vacationDays,
         rate,
         constAddons,
-        nightAddon,
+        otherAddons,
       });
       return res.status(201).json({ message: "Dane zostały dodane do bazy" });
     }
@@ -229,10 +239,13 @@ router.put("/update-settings/:userID", async (req, res) => {
       typeOfJobTime,
       rateType,
       taxReliefType,
+      nightAddon,
+      PPK,
+      tradeUnions,
       vacationDays,
       rate,
       constAddons,
-      nightAddon,
+      otherAddons,
     });
 
     res.json({ message: "Dane zostały zaktualizowane" });
@@ -266,10 +279,13 @@ router.get("/get-monthly-settings/:userID/:year/:month", async (req, res) => {
         typeOfJobTime: mainSettings.typeOfJobTime,
         rateType: mainSettings.rateType,
         taxReliefType: mainSettings.taxReliefType,
+        nightAddon: mainSettings.nightAddon,
+        PPK: mainSettings.PPK,
+        tradeUnions: mainSettings.tradeUnions,
         vacationDays: mainSettings.vacationDays,
         rate: mainSettings.rate,
-        nightAddon: mainSettings.nightAddon,
         constAddons: mainSettings.constAddons,
+        otherAddons: 0,
       });
     }
 
