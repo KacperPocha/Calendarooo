@@ -127,8 +127,11 @@ router.put("/update-work-hours/:userID/:date", async (req, res) => {
   const formattedDate = dayjs(date).format("YYYY-MM-DD");
   const {
     godzinyPrzepracowane,
+    godzinyNocne,
     nadgodziny50,
     nadgodziny100,
+    nadgodziny50Nocne,
+    nadgodziny100Nocne,
     silaWyzsza,
     nieobecnosc,
     noteTitle,
@@ -144,8 +147,11 @@ router.put("/update-work-hours/:userID/:date", async (req, res) => {
         user_id: userID,
         data: formattedDate,
         godzinyPrzepracowane,
+        godzinyNocne,
         nadgodziny50,
         nadgodziny100,
+        nadgodziny50Nocne,
+        nadgodziny100Nocne,
         silaWyzsza,
         nieobecnosc,
         noteTitle,
@@ -156,8 +162,11 @@ router.put("/update-work-hours/:userID/:date", async (req, res) => {
 
     await entry.update({
       godzinyPrzepracowane,
+      godzinyNocne,
       nadgodziny50,
       nadgodziny100,
+      nadgodziny50Nocne,
+      nadgodziny100Nocne,
       silaWyzsza,
       nieobecnosc,
       noteTitle,

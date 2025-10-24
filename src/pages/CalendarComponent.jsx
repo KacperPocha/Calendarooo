@@ -4,6 +4,7 @@ import PopUp from "./PopUp";
 import { useFetcher } from "react-router-dom";
 import io from 'socket.io-client';
 
+
 const socket = io('http://localhost:3000');
 
 export const CalendarComponent = forwardRef(({ workHoursInfo, daysArrayFromChild, onRefresh, setRawData }, ref) => {
@@ -26,6 +27,8 @@ export const CalendarComponent = forwardRef(({ workHoursInfo, daysArrayFromChild
       socket.off('update-users');
     };
   }, []);
+
+
 
   useEffect(() => {
     workHoursInfo(workHours)
@@ -141,6 +144,7 @@ export const CalendarComponent = forwardRef(({ workHoursInfo, daysArrayFromChild
         noteTitle: dataDay.find((entry) => entry.data === dayKey)?.noteTitle || null
 
       });
+
     }
 
     // Następny miesiąc
@@ -167,12 +171,11 @@ export const CalendarComponent = forwardRef(({ workHoursInfo, daysArrayFromChild
     return daysArray;
   };
 
-
-useEffect(() => {
-  if (daysArrayFromChild) {
-    daysArrayFromChild(generateDays());
-  }
-}, [currentDate, holidays, dataDay])
+  useEffect(() => {
+    if (daysArrayFromChild) {
+      daysArrayFromChild(generateDays());
+    }
+  }, [currentDate, holidays, dataDay])
 
 
 
@@ -200,16 +203,19 @@ useEffect(() => {
       if (response.data && Array.isArray(response.data)) {
         const formattedData = response.data.reduce((acc, entry) => {
           const godzinyPrzepracowane = entry.godzinyPrzepracowane || 0;
+          const godzinyNocne = entry.godzinyNocne || 0;
           const nadgodziny50 = entry.nadgodziny50 || 0;
           const nadgodziny100 = entry.nadgodziny100 || 0;
+          const nadgodziny50Nocne = entry.nadgodziny50Nocne || 0;
+          const nadgodziny100Nocne = entry.nadgodziny100Nocne || 0
           acc[entry.data] =
-            godzinyPrzepracowane + nadgodziny50 + nadgodziny100;
+            godzinyPrzepracowane + godzinyNocne + nadgodziny50 + nadgodziny100 + nadgodziny50Nocne + nadgodziny100Nocne;
           return acc;
         }, {});
 
         setDataDay(response.data);
+        workHoursInfo(response.data);
         setWorkHours(formattedData);
-        workHoursInfo(formattedData);
         setRawData(response.data)
         if (shouldRefreshOthers && onRefresh) {
           onRefresh();
@@ -250,9 +256,7 @@ useEffect(() => {
 
     }
   };
-
-
-
+  console.log(loading)
   return (
     <div className="p-4  mx-auto">
       <PopUp
@@ -300,10 +304,13 @@ useEffect(() => {
               <div
                 key={index}
                 onClick={() => { { dayObj.isNextMonth ? changeMonth(1) : handleDayClick(dayObj) }; { dayObj.isPreviousMonth ? changeMonth(-1) : handleDayClick(dayObj) } }}
-                className={`relative h-28 flex flex-col border rounded shadow cursor-pointer hover:scale-105 ${dayObj.isOtherMonth
-                  ? "bg-gray-300"
-                  : "bg-gray-100 hover:bg-blue-100"
-                  } ${isHoliday(dayObj.day) && !dayObj.isOtherMonth ? "bg-red-200" : ""}`}
+                className={`relative h-28 flex flex-col border rounded shadow cursor-pointer hover:scale-105
+                    ${dayObj.isOtherMonth ? "bg-gray-300" :
+                    isHoliday(dayObj.day) ? "bg-red-200" :
+                      dayObj.isWeekend ? "bg-blue-200" :
+                        "bg-gray-100 hover:bg-blue-100"}        
+                    `}
+
               >
 
                 <span className="absolute top-1 right-2 text-lg font-bold">
