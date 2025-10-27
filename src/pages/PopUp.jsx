@@ -2,6 +2,9 @@ import axios from "axios";
 import React, { useEffect, useState } from "react";
 
 const PopUp = ({ isOpen, onClose, selectedDate, setSelectedDate, fetchWorkHours, notesOpen }) => {
+  const [rangeMode, setRangeMode] = useState(false);
+  const [fromDate, setFromDate] = useState('');
+  const [toDate, setToDate] = useState("");
   const [workHoursData, setWorkHoursData] = useState(null);
   const [workHours, setWorkHours] = useState(0);
   const [nightHours, setNightHours] = useState(0);
@@ -66,11 +69,56 @@ const PopUp = ({ isOpen, onClose, selectedDate, setSelectedDate, fetchWorkHours,
   const handleOnSubmit = async (e) => {
     e.preventDefault();
     setNotes(false);
+
     const parsedWorkHours = Number(workHours);
     if (isNaN(parsedWorkHours)) {
       alert("Proszę wprowadzić prawidłową liczbę godzin");
       return;
     }
+
+    const userID = localStorage.getItem("userID");
+    const isNoteEmpty = !noteTitle || noteTitle.trim() === "";
+
+
+    if (rangeMode && fromDate && toDate) {
+      try {
+        const start = new Date(fromDate);
+        const end = new Date(toDate);
+        const updates = [];
+
+        for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+          const formattedDate = d.toISOString().split("T")[0];
+          updates.push(
+            axios.put(`http://localhost:3000/api/update-work-hours/${userID}/${formattedDate}`, {
+              godzinyPrzepracowane: parsedWorkHours,
+              godzinyNocne: nightHours,
+              nadgodziny50,
+              nadgodziny100,
+              nadgodziny50Nocne,
+              nadgodziny100Nocne,
+              silaWyzsza,
+              nieobecnosc,
+              noteTitle: isNoteEmpty ? null : noteTitle,
+              noteDescription: isNoteEmpty ? null : noteDescription,
+            })
+          );
+        }
+
+        await Promise.all(updates);
+        setFromDate("");
+        setToDate("");
+        setRangeMode(false);
+        onClose();
+
+        if (fetchWorkHours) setTimeout(fetchWorkHours, 200);
+        return;
+      } catch (error) {
+        console.error("Błąd podczas zapisywania zakresu:", error);
+        alert("Wystąpił błąd podczas zapisywania danych zakresu.");
+        return;
+      }
+    }
+
 
     if (
       parsedWorkHours !== workHoursData?.godzinyPrzepracowane ||
@@ -84,8 +132,6 @@ const PopUp = ({ isOpen, onClose, selectedDate, setSelectedDate, fetchWorkHours,
       noteTitle !== workHoursData?.noteTitle ||
       noteDescription !== workHoursData?.noteDescription
     ) {
-      const userID = localStorage.getItem("userID");
-      const isNoteEmpty = !noteTitle || noteTitle.trim() === "";
       try {
         await axios.put(
           `http://localhost:3000/api/update-work-hours/${userID}/${data}`,
@@ -99,7 +145,7 @@ const PopUp = ({ isOpen, onClose, selectedDate, setSelectedDate, fetchWorkHours,
             silaWyzsza: silaWyzsza,
             nieobecnosc: nieobecnosc,
             noteTitle: isNoteEmpty ? null : noteTitle,
-            noteDescription: isNoteEmpty ? null : noteDescription
+            noteDescription: isNoteEmpty ? null : noteDescription,
           }
         );
 
@@ -109,16 +155,18 @@ const PopUp = ({ isOpen, onClose, selectedDate, setSelectedDate, fetchWorkHours,
         setnadgodziny100(nadgodziny100);
         setNadgodziny50Nocne(nadgodziny50Nocne);
         setNadgodziny100Nocne(nadgodziny100Nocne);
-        setSilaWyzsza(silaWyzsza)
+        setSilaWyzsza(silaWyzsza);
         setnieobecnosc(nieobecnosc);
         setNoteTitle(noteTitle);
         setNoteDescription(noteDescription);
+        setFromDate("");
+        setToDate("");
+        setRangeMode(false);
         onClose();
-        setTimeout(() => {
-          if (fetchWorkHours) {
-            fetchWorkHours();
-          }
-        }, 100);
+
+        if (fetchWorkHours) {
+          setTimeout(fetchWorkHours, 100);
+        }
       } catch (error) {
         console.error("Błąd podczas zapisywania godzin:", error);
       }
@@ -127,7 +175,7 @@ const PopUp = ({ isOpen, onClose, selectedDate, setSelectedDate, fetchWorkHours,
       onClose();
     }
   };
-  console.log(nieobecnosc)
+
   useEffect(() => {
     if (workHours === 0 && nadgodziny50 === 0 && nadgodziny100 === 0) {
       setSelectDisabled(false);
@@ -141,11 +189,22 @@ const PopUp = ({ isOpen, onClose, selectedDate, setSelectedDate, fetchWorkHours,
     setter(value === "" ? 0 : value);
   };
 
-const getDayOfWeek = (dateString) => {
-  const days = ["Niedziela", "Poniedziałek", "Wtorek", "Środa", "Czwartek", "Piątek", "Sobota"];
-  const date = new Date(dateString);
-  return days[date.getDay()];
-};
+  const getDayOfWeek = (dateString) => {
+    const days = ["Niedziela", "Poniedziałek", "Wtorek", "Środa", "Czwartek", "Piątek", "Sobota"];
+    const date = new Date(dateString);
+    return days[date.getDay()];
+  };
+
+  const deleteData = async () => {
+    const userID = localStorage.getItem("userID");
+
+    try{
+      await axios.put(`http://localhost:3000/api/delete-workHours/${userID}/${data}`);
+      await fetchWorkHours()
+    }catch (err){
+      console.err(err)
+    }
+  }
 
 
   if (!isOpen) return null;
@@ -160,13 +219,13 @@ const getDayOfWeek = (dateString) => {
       className="fixed inset-0 flex justify-center items-center bg-black bg-opacity-50 z-50 overflow-auto"
     >
       <div
-        className="flex flex-col bg-white rounded-lg shadow-lg p-6 w-full max-w-xl max-h-[90vh] overflow-auto relative"
+        className="flex flex-col bg-white rounded-lg shadow-lg p-4 w-full max-w-xl max-h-[90vh] overflow-auto relative"
         onClick={(e) => e.stopPropagation()}
       >
 
         <div className="flex justify-between mb-4">
           <div>
-            <label className="block mb-2 text-sm text-slate-600">Data:</label>
+            <label className=" m,block mb-2 text-sm text-slate-600">Data:</label>
             <input
               className="w-full bg-transparent placeholder:text-slate-400 text-slate-700 text-sm border border-slate-200 rounded-md px-3 py-2"
               type="text"
@@ -174,8 +233,8 @@ const getDayOfWeek = (dateString) => {
               disabled
             />
           </div>
-          <div>
-            <label className="block mb-2 text-sm text-slate-600">Dzień:</label>
+          <div className="ml-2">
+            <label className=" m,block mb-2 text-sm text-slate-600">Dzień:</label>
             <input
               className="w-full bg-transparent placeholder:text-slate-400 text-slate-700 text-sm border border-slate-200 rounded-md px-3 py-2"
               type="text"
@@ -183,6 +242,16 @@ const getDayOfWeek = (dateString) => {
               disabled
             />
           </div>
+          <div className='flex items-center'>
+            <input id="react-checkbox-list" type="checkbox" value="" className="ml-4 text-blue-600 bg-gray-100 border-gray-300 rounded-sm focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-700 dark:focus:ring-offset-gray-700 focus:ring-2 dark:bg-gray-600 dark:border-gray-500 mr-2"
+              checked={rangeMode}
+              onChange={(e) => {
+                setRangeMode(e.target.checked);
+              }}
+            />
+            <label htmlFor="rate" className='mr-1 text-sm'>Wprowadzanie danych z zakresu </label>
+          </div>
+
 
           <button
             onClick={() => { Close(); onClose(); }}
@@ -191,9 +260,34 @@ const getDayOfWeek = (dateString) => {
             Zamknij
           </button>
         </div>
-        <form onSubmit={handleOnSubmit} className="grid gap-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
+        <form onSubmit={handleOnSubmit} className="grid gap-6">
+          {rangeMode && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label className="block mb-2 text-sm text-slate-600">Zakres od:</label>
+                <input
+                  className="w-full bg-transparent placeholder:text-slate-400 text-slate-700 text-sm border border-slate-200 rounded-md px-3 py-2"
+                  type="date"
+                  value={fromDate}
+                  onChange={(e) => setFromDate(e.target.value)}
+                  onBlur={(e) => handleBlur(setFromDate, e.target.value)}
+                />
+              </div>
+              <div>
+                <label className="block mb-2 text-sm text-slate-600">Zakres do:</label>
+                <input
+                  className="w-full bg-transparent placeholder:text-slate-400 text-slate-700 text-sm border border-slate-200 rounded-md px-3 py-2"
+                  type="date"
+                  value={toDate}
+                  onChange={(e) => setToDate(e.target.value)}
+                  onBlur={(e) => handleBlur(setToDate, e.target.value)}
+                />
+              </div>
+            </div>
+          )}
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label className="block mb-2 text-sm text-slate-600">Ilość godzin zwykłych:</label>
               <input
@@ -334,8 +428,17 @@ const getDayOfWeek = (dateString) => {
           >
             Zapisz
           </button>
+          <button
+            onClick={deleteData}
+            className="bg-red-400 text-white py-2 rounded hover:bg-red-500"
+          >
+            Wyczyść
+          </button>
 
           <div className="flex justify-center mt-4 space-x-4">
+
+
+
             <button
               type="button"
               className="text-2xl"

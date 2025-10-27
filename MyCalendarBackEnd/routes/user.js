@@ -179,6 +179,22 @@ router.put("/update-work-hours/:userID/:date", async (req, res) => {
   }
 });
 
+router.put("/delete-workHours/:userID/:date", async (req, res) => {
+  try {
+    const { userID, date } = req.params;
+    const record = await work_hours.findOne({
+      where: { user_id: userID, data: date },
+    });
+    if (!record)
+      return res.status(404).json({ message: "Nie znaleziono danych." });
+    await record.destroy();
+    res.json({ message: "Dane zostały usunięte" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Błąd serwera" });
+  }
+});
+
 router.put("/delete-note/:userID/:date", async (req, res) => {
   try {
     const { userID, date } = req.params;
