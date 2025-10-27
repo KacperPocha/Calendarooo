@@ -256,7 +256,7 @@ export const CalendarComponent = forwardRef(({ workHoursInfo, daysArrayFromChild
 
     }
   };
-  console.log(loading)
+
   return (
     <div className="p-4  mx-auto">
       <PopUp
@@ -326,8 +326,30 @@ export const CalendarComponent = forwardRef(({ workHoursInfo, daysArrayFromChild
                 {!dayObj.isOtherMonth && (
                   <div className="flex items-center justify-center h-full cursor-pointer mb-2">
                     <span className="text-2xl font-medium">
-                      {workHours[dayKey] ? `${workHours[dayKey]}h` : ""}
+                      {(() => {
+                        const dayData = dataDay.find(entry => entry.data === dayKey);
+
+                        if (!dayData) return "";
+
+                        if (dayData.nieobecnosc) {
+                          return (
+                            <span className="font-semibold">
+                              {dayData.nieobecnosc}
+                            </span>
+                          );
+                        }
+                        const totalHours =
+                          (dayData.godzinyPrzepracowane || 0) +
+                          (dayData.godzinyNocne || 0) +
+                          (dayData.nadgodziny50 || 0) +
+                          (dayData.nadgodziny100 || 0) +
+                          (dayData.nadgodziny50Nocne || 0) +
+                          (dayData.nadgodziny100Nocne || 0);
+
+                        return totalHours > 0 ? `${totalHours}h` : "";
+                      })()}
                     </span>
+
                   </div>
                 )}
                 {dayObj.noteTitle &&

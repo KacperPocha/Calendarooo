@@ -197,11 +197,12 @@ const PopUp = ({ isOpen, onClose, selectedDate, setSelectedDate, fetchWorkHours,
 
   const deleteData = async () => {
     const userID = localStorage.getItem("userID");
-
-    try{
+    Close();
+    try {
       await axios.put(`http://localhost:3000/api/delete-workHours/${userID}/${data}`);
       await fetchWorkHours()
-    }catch (err){
+
+    } catch (err) {
       console.err(err)
     }
   }
@@ -353,21 +354,58 @@ const PopUp = ({ isOpen, onClose, selectedDate, setSelectedDate, fetchWorkHours,
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
             <div>
               <label className="block mb-2 text-sm text-slate-600">
-                Powód nieobecności/ wcześniejszego wyjścia:
+                Powód nieobecności / wcześniejszego wyjścia:
               </label>
+
               <select
                 className="w-full bg-transparent placeholder:text-slate-400 text-slate-700 text-sm border border-slate-200 rounded-md px-3 py-2"
                 value={nieobecnosc ?? ""}
                 onChange={(e) => setnieobecnosc(e.target.value || null)}
               >
                 <option value="">-</option>
-                <option disabled={selectDisabled} value="L4">L4</option>
-                <option disabled={selectDisabled} value="Krwiodastwo">Krwiodastwo</option>
-                <option value="Siła wyższa">Siła wyższa</option>
-                <option disabled={selectDisabled} value="Urlop">Urlop</option>
-              </select>
 
+                <optgroup label="Urlopy płatne">
+                  <option disabled={selectDisabled} value="UW">Urlop wypoczynkowy (UW)</option>
+                  <option disabled={selectDisabled} value="UZ">Urlop na żądanie (UZ)</option>
+                  <option disabled={selectDisabled} value="UO">Urlop okolicznościowy (UO)</option>
+                  <option disabled={selectDisabled} value="UOP">Urlop opiekuńczy (UOP)</option>
+                </optgroup>
+
+                <optgroup label="Urlopy bezpłatne">
+                  <option disabled={selectDisabled} value="UB">Urlop bezpłatny (UB)</option>
+                </optgroup>
+
+                <optgroup label="Urlopy rodzicielskie">
+                  <option disabled={selectDisabled} value="UM">Urlop macierzyński (UM)</option>
+                  <option disabled={selectDisabled} value="UOJ">Urlop ojcowski (UOJ)</option>
+                  <option disabled={selectDisabled} value="UR">Urlop rodzicielski (UR)</option>
+                  <option disabled={selectDisabled} value="URD1">Urlop rodzicielski – 100% (URD1)</option>
+                  <option disabled={selectDisabled} value="URD2">Urlop rodzicielski – 60% (URD2)</option>
+                  <option disabled={selectDisabled} value="URD3">Urlop rodzicielski – 80% (URD3)</option>
+                </optgroup>
+
+                <optgroup label="Zwolnienia lekarskie (L4)">
+                  <option disabled={selectDisabled} value="L4 100">L4 100% — np. ciąża, wypadek w pracy</option>
+                  <option disabled={selectDisabled} value="L4 80">L4 80% — zwykłe chorobowe</option>
+                  <option disabled={selectDisabled} value="L4 50">L4 50% — przedsiębiorca lub zasiłek specjalny</option>
+                </optgroup>
+
+                <optgroup label="Inne usprawiedliwione">
+                  <option disabled={selectDisabled} value="KR">Oddanie krwi (KR)</option>
+                  <option value="SW">Siła wyższa (SW)</option>
+                  <option disabled={selectDisabled} value="WU">Wezwanie urzędowe (WU)</option>
+                  <option disabled={selectDisabled} value="SZK">Szkolenie (SZK)</option>
+                  <option disabled={selectDisabled} value="DEL">Delegacja (DEL)</option>
+                  <option disabled={selectDisabled} value="PRZ">Przestój niezawiniony (PRZ)</option>
+                </optgroup>
+
+                <optgroup label="Nieusprawiedliwione">
+                  <option disabled={selectDisabled} value="NB">Nieusprawiedliwiona nieobecność (NB)</option>
+                </optgroup>
+              </select>
             </div>
+
+
             {nieobecnosc === "Siła wyższa" ?
               <div className="mt-4">
                 <label className="block mb-2 text-sm text-slate-600">Siła wyższa:</label>
@@ -424,37 +462,36 @@ const PopUp = ({ isOpen, onClose, selectedDate, setSelectedDate, fetchWorkHours,
 
           <button
             type="submit"
-            className="bg-blue-500 text-white py-2 rounded hover:bg-blue-600"
+            className="bg-blue-500 text-white py-2 rounded hover:bg-blue-600 mb-6"
           >
             Zapisz
           </button>
-          <button
-            onClick={deleteData}
-            className="bg-red-400 text-white py-2 rounded hover:bg-red-500"
-          >
-            Wyczyść
-          </button>
-
-          <div className="flex justify-center mt-4 space-x-4">
 
 
 
-            <button
-              type="button"
-              className="text-2xl"
-              onClick={() => changeDate(-1)}
-            >
-              🡸
-            </button>
-            <button
-              type="button"
-              className="text-2xl"
-              onClick={() => changeDate(1)}
-            >
-              🡺
-            </button>
-          </div>
         </form>
+        <button
+          onClick={deleteData}
+          className="bg-red-400 text-white py-2 rounded hover:bg-red-500"
+        >
+          Wyczyść
+        </button>
+        <div className="flex justify-center mt-4 space-x-4">
+          <button
+            type="button"
+            className="text-2xl"
+            onClick={() => changeDate(-1)}
+          >
+            🡸
+          </button>
+          <button
+            type="button"
+            className="text-2xl"
+            onClick={() => changeDate(1)}
+          >
+            🡺
+          </button>
+        </div>
       </div>
     </div>
   );
