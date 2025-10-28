@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 const PopUp = ({ isOpen, onClose, selectedDate, setSelectedDate, fetchWorkHours, notesOpen }) => {
   const [rangeMode, setRangeMode] = useState(false);
   const [fromDate, setFromDate] = useState('');
+  const [withoutWeekends, setWithoutWeekends] = useState(false)
   const [toDate, setToDate] = useState("");
   const [workHoursData, setWorkHoursData] = useState(null);
   const [workHours, setWorkHours] = useState(0);
@@ -97,6 +98,11 @@ const PopUp = ({ isOpen, onClose, selectedDate, setSelectedDate, fetchWorkHours,
         const updates = [];
 
         for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+          const dayOfWeek = d.getDay();
+          if(withoutWeekends && (dayOfWeek === 0 || dayOfWeek === 6)){
+            continue;
+          }
+          
           const formattedDate = d.toISOString().split("T")[0];
           updates.push(
             axios.put(`http://localhost:3000/api/update-work-hours/${userID}/${formattedDate}`, {
@@ -225,6 +231,8 @@ const PopUp = ({ isOpen, onClose, selectedDate, setSelectedDate, fetchWorkHours,
     onClose();
   };
 
+  console.log(withoutWeekends)
+
   return (
     <div
       className="fixed inset-0 flex justify-center items-center bg-black bg-opacity-50 z-50 overflow-auto"
@@ -262,6 +270,7 @@ const PopUp = ({ isOpen, onClose, selectedDate, setSelectedDate, fetchWorkHours,
             />
             <label htmlFor="rate" className='mr-1 text-sm'>Wprowadzanie danych z zakresu </label>
           </div>
+
 
 
           <button
@@ -307,7 +316,13 @@ const PopUp = ({ isOpen, onClose, selectedDate, setSelectedDate, fetchWorkHours,
                   disabled={!fromDate}
                 />
               </div>
-
+              <div className='flex items-center'>
+                <input id="react-checkbox-list" type="checkbox" value="" className="w-4 h-4 ml-1 text-blue-600 bg-gray-100 border-gray-300 rounded-sm focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-700 dark:focus:ring-offset-gray-700 focus:ring-2 dark:bg-gray-600 dark:border-gray-500 mr-2"
+                    checked={withoutWeekends}
+                    onChange={(e) => setWithoutWeekends(e.target.checked)}
+                />
+                <label htmlFor="rate">Pomiń weekendy </label>
+              </div>
             </div>
           )}
 

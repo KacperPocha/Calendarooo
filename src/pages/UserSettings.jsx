@@ -238,8 +238,9 @@ const UserSettings = ({ isOpen, onClose, userRate, onSettingsSaved, mode }) => {
                             <input id="react-checkbox-list" type="checkbox" value="" className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded-sm focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-700 dark:focus:ring-offset-gray-700 focus:ring-2 dark:bg-gray-600 dark:border-gray-500 mr-2"
                                 checked={checkedPPK}
                                 onChange={(e) => {
+                                    if (!e.target.checked) setPPK(0);
                                     setCheckedPPK(e.target.checked);
-                                    if (e.target.checked) setPPK(0);
+                                    
                                 }}
                             />
                             <label htmlFor="rate" className='mr-2'>Składka PPK [%]: </label>
@@ -259,12 +260,12 @@ const UserSettings = ({ isOpen, onClose, userRate, onSettingsSaved, mode }) => {
                             <label htmlFor="rate" className='mr-2'>Składki związkowe [%]: </label>
                         </div>
 
-                        <input type="number" name="rate" min="0" max="100" className='border-2 border-black rounded px-2 w-24 sm:w-32 md:w-40' value={tradeUnions} onChange={(e) => setTradeUnions(Number(e.target.value))} disabled={!checkedTradeUnions} />
+                        <input type="number" step="0.01"  name="rate" min="0" max="100" className='border-2 border-black rounded px-2 w-24 sm:w-32 md:w-40' value={tradeUnions} onChange={(e) => setTradeUnions(Number(e.target.value))} disabled={!checkedTradeUnions} />
                     </div>
 
                     <div className='flex justify-between'>
                         <label htmlFor="rate" className='mr-2'>Suma stałych dodatków [brutto zł]: </label>
-                        <input type="number" name="rate" min="0" max="9999999" className='border-2 border-black rounded px-2 w-24 sm:w-32 md:w-40' value={constAddons} onChange={(e) => setConstAddons(Number(e.target.value))} />
+                        <input type="number" step="0.01" name="rate" min="0" max="9999999" className='border-2 border-black rounded px-2 w-24 sm:w-32 md:w-40' value={constAddons} onChange={(e) => setConstAddons(Number(e.target.value))} />
                     </div>
                     {mode === "monthly" ?
                         <div className='flex justify-between mt-4'>
