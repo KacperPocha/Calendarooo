@@ -81,6 +81,16 @@ const PopUp = ({ isOpen, onClose, selectedDate, setSelectedDate, fetchWorkHours,
 
 
     if (rangeMode && fromDate && toDate) {
+      if (fromDate > toDate) {
+        alert("Data startowa nie może być mniejsza od daty końcowej")
+        return;
+      }
+      if (new Date(toDate) - new Date(fromDate) > 31 * 24 * 60 * 60 * 1000) {
+        alert("Zakres nie może przekraczać 31 dni");
+        return;
+      }
+
+
       try {
         const start = new Date(fromDate);
         const end = new Date(toDate);
@@ -270,21 +280,34 @@ const PopUp = ({ isOpen, onClose, selectedDate, setSelectedDate, fetchWorkHours,
                 <input
                   className="w-full bg-transparent placeholder:text-slate-400 text-slate-700 text-sm border border-slate-200 rounded-md px-3 py-2"
                   type="date"
+                  min="1980-01-01"
+                  max="2060-12-31"
                   value={fromDate}
                   onChange={(e) => setFromDate(e.target.value)}
                   onBlur={(e) => handleBlur(setFromDate, e.target.value)}
                 />
               </div>
+
               <div>
                 <label className="block mb-2 text-sm text-slate-600">Zakres do:</label>
                 <input
                   className="w-full bg-transparent placeholder:text-slate-400 text-slate-700 text-sm border border-slate-200 rounded-md px-3 py-2"
                   type="date"
+                  min={fromDate || "1980-01-01"}
+                  max={
+                    fromDate
+                      ? new Date(new Date(fromDate).setMonth(new Date(fromDate).getMonth() + 1))
+                        .toISOString()
+                        .split("T")[0]
+                      : "2060-12-31"
+                  }
                   value={toDate}
                   onChange={(e) => setToDate(e.target.value)}
                   onBlur={(e) => handleBlur(setToDate, e.target.value)}
+                  disabled={!fromDate}
                 />
               </div>
+
             </div>
           )}
 
@@ -294,6 +317,7 @@ const PopUp = ({ isOpen, onClose, selectedDate, setSelectedDate, fetchWorkHours,
               <input
                 className="w-full bg-transparent placeholder:text-slate-400 text-slate-700 text-sm border border-slate-200 rounded-md px-3 py-2"
                 type="number"
+                min="0" max="24"
                 value={workHours === null ? 0 : workHours}
                 onChange={(e) => setWorkHours(e.target.value)}
                 onBlur={(e) => handleBlur(setWorkHours, e.target.value)}
@@ -304,6 +328,7 @@ const PopUp = ({ isOpen, onClose, selectedDate, setSelectedDate, fetchWorkHours,
               <input
                 className="w-full bg-transparent placeholder:text-slate-400 text-slate-700 text-sm border border-slate-200 rounded-md px-3 py-2"
                 type="number"
+                min="0" max="24"
                 value={nightHours === null ? 0 : nightHours}
                 onChange={(e) => setNightHours(e.target.value)}
                 onBlur={(e) => handleBlur(setNightHours, e.target.value)}
@@ -314,6 +339,7 @@ const PopUp = ({ isOpen, onClose, selectedDate, setSelectedDate, fetchWorkHours,
               <input
                 className="w-full bg-transparent placeholder:text-slate-400 text-slate-700 text-sm border border-slate-200 rounded-md px-3 py-2"
                 type="number"
+                min="0" max="24"
                 value={nadgodziny50}
                 onChange={(e) => setnadgodziny50(e.target.value)}
                 onBlur={(e) => handleBlur(setnadgodziny50, e.target.value)}
@@ -324,6 +350,7 @@ const PopUp = ({ isOpen, onClose, selectedDate, setSelectedDate, fetchWorkHours,
               <input
                 className="w-full bg-transparent placeholder:text-slate-400 text-slate-700 text-sm border border-slate-200 rounded-md px-3 py-2"
                 type="number"
+                min="0" max="24"
                 value={nadgodziny100}
                 onChange={(e) => setnadgodziny100(e.target.value)}
                 onBlur={(e) => handleBlur(setnadgodziny100, e.target.value)}
@@ -334,6 +361,7 @@ const PopUp = ({ isOpen, onClose, selectedDate, setSelectedDate, fetchWorkHours,
               <input
                 className="w-full bg-transparent placeholder:text-slate-400 text-slate-700 text-sm border border-slate-200 rounded-md px-3 py-2"
                 type="number"
+                min="0" max="24"
                 value={nadgodziny50Nocne}
                 onChange={(e) => setNadgodziny50Nocne(e.target.value)}
                 onBlur={(e) => handleBlur(setNadgodziny50Nocne, e.target.value)}
@@ -344,6 +372,7 @@ const PopUp = ({ isOpen, onClose, selectedDate, setSelectedDate, fetchWorkHours,
               <input
                 className="w-full bg-transparent placeholder:text-slate-400 text-slate-700 text-sm border border-slate-200 rounded-md px-3 py-2"
                 type="number"
+                min="0" max="24"
                 value={nadgodziny100Nocne}
                 onChange={(e) => setNadgodziny100Nocne(e.target.value)}
                 onBlur={(e) => handleBlur(setNadgodziny100Nocne, e.target.value)}
@@ -379,15 +408,15 @@ const PopUp = ({ isOpen, onClose, selectedDate, setSelectedDate, fetchWorkHours,
                   <option disabled={selectDisabled} value="UM">Urlop macierzyński (UM)</option>
                   <option disabled={selectDisabled} value="UOJ">Urlop ojcowski (UOJ)</option>
                   <option disabled={selectDisabled} value="UR">Urlop rodzicielski (UR)</option>
-                  <option disabled={selectDisabled} value="URD1">Urlop rodzicielski – 100% (URD1)</option>
-                  <option disabled={selectDisabled} value="URD2">Urlop rodzicielski – 60% (URD2)</option>
-                  <option disabled={selectDisabled} value="URD3">Urlop rodzicielski – 80% (URD3)</option>
+                  <option disabled={selectDisabled} value="URD1">Urlop rodzicielski 100% (URD1)</option>
+                  <option disabled={selectDisabled} value="URD2">Urlop rodzicielski 60% (URD2)</option>
+                  <option disabled={selectDisabled} value="URD3">Urlop rodzicielski 80% (URD3)</option>
                 </optgroup>
 
                 <optgroup label="Zwolnienia lekarskie (L4)">
-                  <option disabled={selectDisabled} value="L4 100">L4 100% — np. ciąża, wypadek w pracy</option>
-                  <option disabled={selectDisabled} value="L4 80">L4 80% — zwykłe chorobowe</option>
-                  <option disabled={selectDisabled} value="L4 50">L4 50% — przedsiębiorca lub zasiłek specjalny</option>
+                  <option disabled={selectDisabled} value="L4100">L4 100% — np. ciąża, wypadek w pracy</option>
+                  <option disabled={selectDisabled} value="L480">L4 80% — zwykłe chorobowe</option>
+                  <option disabled={selectDisabled} value="L450">L4 50% — przedsiębiorca lub zasiłek specjalny</option>
                 </optgroup>
 
                 <optgroup label="Inne usprawiedliwione">
@@ -406,12 +435,13 @@ const PopUp = ({ isOpen, onClose, selectedDate, setSelectedDate, fetchWorkHours,
             </div>
 
 
-            {nieobecnosc === "Siła wyższa" ?
+            {nieobecnosc === "SW" ?
               <div className="mt-4">
                 <label className="block mb-2 text-sm text-slate-600">Siła wyższa:</label>
                 <input
                   className="w-full bg-transparent placeholder:text-slate-400 text-slate-700 text-sm border border-slate-200 rounded-md px-3 py-2"
                   type="number"
+                  min="0" max="24"
                   value={silaWyzsza === null ? 0 : silaWyzsza}
                   onChange={(e) => setSilaWyzsza(e.target.value)}
                   onBlur={(e) => handleBlur(setSilaWyzsza, e.target.value)}

@@ -8,6 +8,76 @@ export const SalaryCalc = ({ workHoursInfo, daysArray, userSetting, setIsPopUpOp
   const [daysArrayParent, setDaysArray] = useState([])
   const [hoursToComplete, setHoursToComplete] = useState(0)
   const totalHours = (Object.values(workHours).reduce((sum, value) => sum + value, 0))
+
+
+  const absenceTypes = {
+
+    UW: { name: "Urlop wypoczynkowy", rate: 100 },
+    UZ: { name: "Urlop na żądanie", rate: 100 },
+    UO: { name: "Urlop okolicznościowy", rate: 100 },
+    UOP: { name: "Urlop opiekuńczy", rate: 100 },
+    USZ: { name: "Urlop szkoleniowy", rate: 100 },
+
+    UB: { name: "Urlop bezpłatny", rate: 0 },
+    UC: { name: "Urlop wychowawczy", rate: 0 },
+
+    UM: { name: "Urlop macierzyński", rate: 100 },
+    UOJ: { name: "Urlop ojcowski", rate: 100 },
+    UR: { name: "Urlop rodzicielski (60%)", rate: 60 },
+    UR100: { name: "Urlop rodzicielski (100%)", rate: 100 },
+    UR80: { name: "Urlop rodzicielski (80%)", rate: 80 },
+    URD: { name: "Urlop rodzicielski (zasiłek 81,5%)", rate: 81.5 },
+
+    L4100: { name: "Zwolnienie lekarskie (L4 – 100%)", rate: 100 },
+    L480: { name: "Zwolnienie lekarskie (L4 – 80%)", rate: 80 },
+    L450: { name: "Zwolnienie lekarskie (L4 – 50%)", rate: 50 },
+
+    KR: { name: "Oddanie krwi (krwiodawstwo)", rate: 100 },
+    SW: { name: "Siła wyższa", rate: 50 },
+    WU: { name: "Wezwanie urzędowe", rate: 100 },
+    SZK: { name: "Szkolenie", rate: 100 },
+    DEL: { name: "Delegacja służbowa", rate: 100 },
+    PRZ: { name: "Przestój niezawiniony", rate: 100 },
+
+    NB: { name: "Nieusprawiedliwiona nieobecność", rate: 0 },
+  };
+
+  const absenceHours = (data) => {
+    const summary = {};
+
+    data.forEach(entry => {
+        if(entry.nieobecnosc){
+          const code = entry.nieobecnosc
+          const absenceInfo = absenceTypes[code]
+        
+
+        if(!absenceInfo) return;
+
+        const hours = entry.godzinyPrzepracowane || 8;
+        const rate = absenceInfo.rate;
+        const paidHours = (hours * rate) / 100;
+
+        if(!summary[code]){
+          summary[code] = {
+            name: absenceInfo.name,
+            rate: rate,
+            days: 0,
+            totalHours: 0,
+            paidHours: 0
+          };
+        }
+          summary[code].days += 1;
+          summary[code].totalHours += hours;
+          summary[code].paidHours += paidHours;
+        }
+    });
+
+    const sumOfAbsence = Object.values(summary).reduce((sum, item) => sum + item.paidHours, 0);
+
+    return sumOfAbsence;
+  }
+
+
   const totalRegularHours = rawData.reduce(
     (sum, day) => sum + (day.godzinyPrzepracowane || 0),
     0
@@ -42,7 +112,8 @@ export const SalaryCalc = ({ workHoursInfo, daysArray, userSetting, setIsPopUpOp
           totalOvertime100 * 2 +
           (totalNightHours * (settings?.nightAddon + 100)) / 100 +
           (totalOvertime50Night * 1.5 * (settings?.nightAddon + 100)) / 100 +
-          (totalOvertime100Night * 2 * (settings?.nightAddon + 100)) / 100
+          (totalOvertime100Night * 2 * (settings?.nightAddon + 100)) / 100 +
+          absenceHours(rawData)
         ) * settings?.rate
       ) / hoursToComplete +
       (settings?.constAddons || 0) +
@@ -58,7 +129,8 @@ export const SalaryCalc = ({ workHoursInfo, daysArray, userSetting, setIsPopUpOp
           totalOvertime100 * 2 +
           (totalNightHours * (settings?.nightAddon + 100)) / 100 +
           (totalOvertime50Night * 1.5 * (settings?.nightAddon + 100)) / 100 +
-          (totalOvertime100Night * 2 * (settings?.nightAddon + 100)) / 100
+          (totalOvertime100Night * 2 * (settings?.nightAddon + 100)) / 100 +
+          absenceHours(rawData)
         ) * settings?.rate
       ) +
       (settings?.constAddons || 0) +
@@ -105,7 +177,6 @@ export const SalaryCalc = ({ workHoursInfo, daysArray, userSetting, setIsPopUpOp
   useEffect(() => {
     setWorkHours(workHoursInfo)
   }, [workHoursInfo])
-
 
 
 

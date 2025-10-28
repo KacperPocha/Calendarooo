@@ -29,11 +29,22 @@ const UserSettings = ({ isOpen, onClose, userRate, onSettingsSaved, mode }) => {
 
     const handleSubmit = async (e) => {
         e.preventDefault()
-        if (typeOfJobTime === null || rateType === null || taxReliefType === null || vacationDays === 0 || rate === 0) {
-            alert("Wypełnij wszystkie dane")
+
+        if (
+            !typeOfJobTime ||
+            !rateType ||
+            !taxReliefType ||
+            vacationDays <= 0 ||
+            rate <= 0 ||
+            constAddons < 0 ||
+            (checkedNightAddon && (nightAddon <= 0 || nightAddon > 100)) ||
+            (checkedPPK && (PPK <= 0 || PPK > 100)) ||
+            (checkedTradeUnions && (tradeUnions <= 0 || tradeUnions > 100)) ||
+            (mode === "monthly" && otherAddons < 0)
+        ) {
+            alert("Wypełnij wszystkie dane poprawnie");
             return;
         }
-
 
         const payload = {
             typeOfJobTime,
@@ -195,17 +206,17 @@ const UserSettings = ({ isOpen, onClose, userRate, onSettingsSaved, mode }) => {
                     </div>
                     <div className='mb-4 flex justify-between'>
                         <label htmlFor="rate" className='mr-2'>Wymiar urlopu: </label>
-                        <input type="number" name="rate" className='border-2 border-black' value={vacationDays} onChange={(e) => setVacationDays(Number(e.target.value))} />
+                        <input type="number" name="rate" min="0" max="365" className='border-2 border-black rounded px-2 w-24 sm:w-32 md:w-40' value={vacationDays} onChange={(e) => setVacationDays(Number(e.target.value))} />
                     </div>
                     {rateType === "month" ?
                         <div className='mb-4 flex justify-between'>
                             <label htmlFor="rate" className='mr-2'>Stawka brutto [mieś.]: </label>
-                            <input type="number" name="rate" className='border-2 border-black' value={rate} onChange={(e) => setRate(Number(e.target.value))} />
+                            <input type="number" name="rate" min="0" max="9999999" className='border-2 border-black rounded px-2 w-24 sm:w-32 md:w-40' value={rate} onChange={(e) => setRate(Number(e.target.value))} />
                         </div>
                         :
                         <div className='mb-4 flex justify-between'>
                             <label htmlFor="rate" className='mr-2'>Stawka brutto [/h]: </label>
-                            <input type="number" name="rate" className='border-2 border-black' value={rate} onChange={(e) => setRate(Number(e.target.value))} />
+                            <input type="number" name="rate" min="0" max="9999999" className='border-2 border-black rounded px-2 w-24 sm:w-32 md:w-40' value={rate} onChange={(e) => setRate(Number(e.target.value))} />
                         </div>
                     }
                     <div className='flex items-center justify-between mb-4'>
@@ -220,9 +231,9 @@ const UserSettings = ({ isOpen, onClose, userRate, onSettingsSaved, mode }) => {
                             <label htmlFor="rate" className='mr-2'>Dodatek Nocny [%]: </label>
                         </div>
 
-                        <input type="number" name="rate" className='border-2 border-black' value={nightAddon} onChange={(e) => setNightAddon(Number(e.target.value))} disabled={!checkedNightAddon} />
+                        <input type="number" name="rate" min="0" max="100" className='border-2 border-black rounded px-2 w-24 sm:w-32 md:w-40' value={nightAddon} onChange={(e) => setNightAddon(Number(e.target.value))} disabled={!checkedNightAddon} />
                     </div>
-                       <div className='flex items-center justify-between mb-4'>
+                    <div className='flex items-center justify-between mb-4'>
                         <div className='flex items-center'>
                             <input id="react-checkbox-list" type="checkbox" value="" className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded-sm focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-700 dark:focus:ring-offset-gray-700 focus:ring-2 dark:bg-gray-600 dark:border-gray-500 mr-2"
                                 checked={checkedPPK}
@@ -234,9 +245,9 @@ const UserSettings = ({ isOpen, onClose, userRate, onSettingsSaved, mode }) => {
                             <label htmlFor="rate" className='mr-2'>Składka PPK [%]: </label>
                         </div>
 
-                        <input type="number" name="rate" className='border-2 border-black' value={PPK} onChange={(e) => setPPK(Number(e.target.value))} disabled={!checkedPPK} />
+                        <input type="number" name="rate" min="0" max="100" className='border-2 border-black rounded px-2 w-24 sm:w-32 md:w-40' value={PPK} onChange={(e) => setPPK(Number(e.target.value))} disabled={!checkedPPK} />
                     </div>
-                       <div className='flex items-center justify-between mb-4'>
+                    <div className='flex items-center justify-between mb-4'>
                         <div className='flex items-center'>
                             <input id="react-checkbox-list" type="checkbox" value="" className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded-sm focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-700 dark:focus:ring-offset-gray-700 focus:ring-2 dark:bg-gray-600 dark:border-gray-500 mr-2"
                                 checked={checkedTradeUnions}
@@ -248,21 +259,21 @@ const UserSettings = ({ isOpen, onClose, userRate, onSettingsSaved, mode }) => {
                             <label htmlFor="rate" className='mr-2'>Składki związkowe [%]: </label>
                         </div>
 
-                        <input type="number" name="rate" className='border-2 border-black' value={tradeUnions} onChange={(e) => setTradeUnions(Number(e.target.value))} disabled={!checkedTradeUnions} />
+                        <input type="number" name="rate" min="0" max="100" className='border-2 border-black rounded px-2 w-24 sm:w-32 md:w-40' value={tradeUnions} onChange={(e) => setTradeUnions(Number(e.target.value))} disabled={!checkedTradeUnions} />
                     </div>
 
                     <div className='flex justify-between'>
                         <label htmlFor="rate" className='mr-2'>Suma stałych dodatków [brutto zł]: </label>
-                        <input type="number" name="rate" className='border-2 border-black' value={constAddons} onChange={(e) => setConstAddons(Number(e.target.value))} />
+                        <input type="number" name="rate" min="0" max="9999999" className='border-2 border-black rounded px-2 w-24 sm:w-32 md:w-40' value={constAddons} onChange={(e) => setConstAddons(Number(e.target.value))} />
                     </div>
-                    {mode === "monthly" ? 
-                     <div className='flex justify-between mt-4'>
-                        <label htmlFor="rate" className='mr-2'>Inne dodatki w tym miesiącu [brutto zł]: </label>
-                        <input type="number" name="rate" className='border-2 border-black' value={otherAddons} onChange={(e) => setOtherAddons(Number(e.target.value))} />
-                    </div>
-                    :
-                    null}
-                     
+                    {mode === "monthly" ?
+                        <div className='flex justify-between mt-4'>
+                            <label htmlFor="rate" className='mr-2'>Inne dodatki w tym miesiącu [brutto zł]: </label>
+                            <input type="number" name="rate" min="0" max="9999999" className='border-2 border-black rounded px-2 w-24 sm:w-32 md:w-40' value={otherAddons} onChange={(e) => setOtherAddons(Number(e.target.value))} />
+                        </div>
+                        :
+                        null}
+
                     <button className='bg-blue-500 text-white px-4 py-2 rounded w-24 mt-8' type="submit">
                         Zapisz
                     </button>
