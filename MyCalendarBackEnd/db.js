@@ -106,9 +106,49 @@ const work_hours = sequelize.define("work_hour", {
   nadgodziny100Nocne: DataTypes.INTEGER,
   silaWyzsza: DataTypes.FLOAT,
   nieobecnosc: DataTypes.STRING,
-  noteTitle: DataTypes.STRING,
-  noteDescription: DataTypes.STRING,
 });
+
+const notes = sequelize.define("note", {
+  id: {
+    type: DataTypes.INTEGER,
+    primaryKey: true,
+    autoIncrement: true,
+  },
+  user_id: {
+    type: DataTypes.INTEGER,
+    references: {
+      model: users,
+      key: "user_id",
+    },
+    onDelete: "CASCADE",
+  },
+  data: {
+    type: DataTypes.DATEONLY,
+    allowNull: false,
+  },
+  title: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+  time:{
+    type: DataTypes.INTEGER,
+    allowNull: true,
+  },
+  description: {
+    type: DataTypes.TEXT,
+    allowNull: true,
+  },
+});
+
+users.hasMany(notes, { foreignKey: "user_id" });
+notes.belongsTo(users, { foreignKey: "user_id" });
+
+work_hours.hasMany(notes, {
+  foreignKey: "data",
+  sourceKey: "data",
+  constraints: false,
+});
+
 
 const monthly_settings = sequelize.define(
   "monthly_settings",
@@ -144,6 +184,7 @@ sequelize.sync();
 
 module.exports = {
   sequelize,
+  notes,
   users,
   work_hours,
   userSettings,

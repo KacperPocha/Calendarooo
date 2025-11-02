@@ -16,6 +16,14 @@ export const CalendarComponent = forwardRef(({ workHoursInfo, daysArrayFromChild
   const [holidays, setHolidays] = useState([])
   const [dataDay, setDataDay] = useState([])
   const [loading, setLoading] = useState(false)
+  const [monthNotes, setMonthNotes] = useState([]);
+
+  const formatTime = (hoursDecimal) => {
+    if (hoursDecimal === null || hoursDecimal === undefined) return "00:00";
+    const hours = Math.floor(hoursDecimal);
+    const minutes = Math.round((hoursDecimal - hours) * 60);
+    return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}`;
+  };
 
 
   useEffect(() => {
@@ -124,8 +132,7 @@ export const CalendarComponent = forwardRef(({ workHoursInfo, daysArrayFromChild
         isNextMonth: false,
         isWeekend: dayOfWeek === 0 || dayOfWeek === 6,
         isHoliday: holidays.some((holiday) => holiday.date === dayKey),
-        noteTitle: dataDay.find((entry) => entry.data === dayKey)?.noteTitle || null
-
+        hasNote: monthNotes.some((note) => note.data === dayKey)
       });
     }
 
@@ -141,8 +148,7 @@ export const CalendarComponent = forwardRef(({ workHoursInfo, daysArrayFromChild
         isNextMonth: false,
         isWeekend: dayOfWeek === 0 || dayOfWeek === 6,
         isHoliday: holidays.some((holiday) => holiday.date === dayKey),
-        noteTitle: dataDay.find((entry) => entry.data === dayKey)?.noteTitle || null
-
+        hasNote: monthNotes.some((note) => note.data === dayKey)
       });
 
     }
@@ -162,8 +168,7 @@ export const CalendarComponent = forwardRef(({ workHoursInfo, daysArrayFromChild
           isNextMonth: true,
           isWeekend: dayOfWeek === 0 || dayOfWeek === 6,
           isHoliday: holidays.some((holiday) => holiday.date === dayKey),
-          noteTitle: dataDay.find((entry) => entry.data === dayKey)?.noteTitle || null
-
+          hasNote: monthNotes.some((note) => note.data === dayKey)
         });
       }
     }
@@ -217,11 +222,19 @@ export const CalendarComponent = forwardRef(({ workHoursInfo, daysArrayFromChild
         workHoursInfo(response.data);
         setWorkHours(formattedData);
         setRawData(response.data)
-        if (shouldRefreshOthers && onRefresh) {
-          onRefresh();
-        }
-
       }
+      try {
+        const notesResponse = await axios.get(`http://localhost:3000/api/notatki/${userID}/${year}/${month}`);
+        setMonthNotes(notesResponse.data);
+      } catch (noteError) {
+        console.error("Błąd podczas pobierania notatek:", noteError);
+        setMonthNotes([]);
+      }
+
+      if (shouldRefreshOthers && onRefresh) {
+        onRefresh();
+      }
+
     } catch (error) {
       console.error("Błąd podczas pobierania godzin:", error);
     } finally {
@@ -346,17 +359,17 @@ export const CalendarComponent = forwardRef(({ workHoursInfo, daysArrayFromChild
                           (dayData.nadgodziny50Nocne || 0) +
                           (dayData.nadgodziny100Nocne || 0);
 
-                        return totalHours > 0 ? `${totalHours}h` : "";
+                        return totalHours > 0 ? `${formatTime(totalHours)}h` : "";
                       })()}
                     </span>
 
                   </div>
                 )}
-                {dayObj.noteTitle &&
+                {dayObj.hasNote && !dayObj.isOtherMonth && (
                   <div className="absolute top-16 mt-3 bg-yellow-300 rounded rounded-2xl pl-2 pr-2 ml-1 max-w-28 text-sm truncate">
                     <span>Notatka!</span>
                   </div>
-                }
+                )}
 
               </div>
             );

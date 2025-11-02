@@ -9,7 +9,6 @@ export const SalaryCalc = ({ workHoursInfo, daysArray, userSetting, setIsPopUpOp
   const [hoursToComplete, setHoursToComplete] = useState(0)
   const totalHours = (Object.values(workHours).reduce((sum, value) => sum + value, 0))
 
-
   const absenceTypes = {
 
     UW: { name: "Urlop wypoczynkowy", rate: 100 },
@@ -42,22 +41,30 @@ export const SalaryCalc = ({ workHoursInfo, daysArray, userSetting, setIsPopUpOp
     NB: { name: "Nieusprawiedliwiona nieobecność", rate: 0 },
   };
 
+
+  const formatTime = (hoursDecimal) => {
+    if (hoursDecimal === null || hoursDecimal === undefined) return "00:00";
+    const hours = Math.floor(hoursDecimal);
+    const minutes = Math.round((hoursDecimal - hours) * 60);
+    return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}`;
+  };
+
   const absenceHours = (data) => {
     const summary = {};
 
     data.forEach(entry => {
-        if(entry.nieobecnosc){
-          const code = entry.nieobecnosc
-          const absenceInfo = absenceTypes[code]
-        
+      if (entry.nieobecnosc) {
+        const code = entry.nieobecnosc
+        const absenceInfo = absenceTypes[code]
 
-        if(!absenceInfo) return;
+
+        if (!absenceInfo) return;
 
         const hours = entry.godzinyPrzepracowane || 8;
         const rate = absenceInfo.rate;
         const paidHours = (hours * rate) / 100;
 
-        if(!summary[code]){
+        if (!summary[code]) {
           summary[code] = {
             name: absenceInfo.name,
             rate: rate,
@@ -66,10 +73,10 @@ export const SalaryCalc = ({ workHoursInfo, daysArray, userSetting, setIsPopUpOp
             paidHours: 0
           };
         }
-          summary[code].days += 1;
-          summary[code].totalHours += hours;
-          summary[code].paidHours += paidHours;
-        }
+        summary[code].days += 1;
+        summary[code].totalHours += hours;
+        summary[code].paidHours += paidHours;
+      }
     });
 
     const sumOfAbsence = Object.values(summary).reduce((sum, item) => sum + item.paidHours, 0);
@@ -201,7 +208,7 @@ export const SalaryCalc = ({ workHoursInfo, daysArray, userSetting, setIsPopUpOp
         </div>
         <div className='mt-4 grid grid-col justify-items-center text-center'>
           <label htmlFor="hours" className='mb-2'>Suma godzin przepracowanych:</label>
-          <input name='hours' type="text" value={totalHours} className='bg-slate-300 p-1 text-center text-2xl w-32' disabled />
+          <input name='hours' type="text" value={formatTime(totalHours)} className='bg-slate-300 p-1 text-center text-2xl w-32' disabled />
         </div>
         <div className='mt-4 grid grid-col justify-items-center text-center'>
           <label htmlFor="hours" className='mb-2'>Podstawa stawki brutto:</label>
