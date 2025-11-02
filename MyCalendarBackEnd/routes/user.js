@@ -23,8 +23,22 @@ router.get("/profile", authenticateToken, async (req, res) => {
 router.get("/get-user-hours/:userID", async (req, res) => {
   try {
     const userID = req.params.userID;
-    const hours = await work_hours.findAll({ where: { user_id: userID } });
+    
+    const { startDate, endDate } = req.query;
+
+
+    const hours = await work_hours.findAll({
+      where: {
+        user_id: userID,
+        data: {
+          [Op.between]: [startDate, endDate]
+        }
+      },
+      order: [['data', 'ASC']]
+    });
+
     res.json(hours);
+
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Błąd podczas pobierania danych" });
