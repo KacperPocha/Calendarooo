@@ -23,22 +23,38 @@ router.get("/profile", authenticateToken, async (req, res) => {
 router.get("/get-user-hours/:userID", async (req, res) => {
   try {
     const userID = req.params.userID;
-    
-    const { startDate, endDate } = req.query;
 
+    const { startDate, endDate } = req.query;
 
     const hours = await work_hours.findAll({
       where: {
         user_id: userID,
         data: {
-          [Op.between]: [startDate, endDate]
-        }
+          [Op.between]: [startDate, endDate],
+        },
       },
-      order: [['data', 'ASC']]
+      order: [["data", "ASC"]],
     });
 
     res.json(hours);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Błąd podczas pobierania danych" });
+  }
+});
 
+router.get("/get-user-allhours/:userID", async (req, res) => {
+  try {
+    const userID = req.params.userID;
+
+    const hours = await work_hours.findAll({
+      where: {
+        user_id: userID,
+      },
+      order: [["data", "ASC"]],
+    });
+
+    res.json(hours);
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Błąd podczas pobierania danych" });
@@ -107,7 +123,7 @@ router.get("/get-popup-data/:userID/:date", async (req, res) => {
 router.get("/notatki/:userID/:year/:month", async (req, res) => {
   try {
     const { userID, year, month } = req.params;
-    const monthFormatted = month.padStart(2, "0"); 
+    const monthFormatted = month.padStart(2, "0");
 
     const notesList = await notes.findAll({
       where: {
@@ -119,15 +135,15 @@ router.get("/notatki/:userID/:year/:month", async (req, res) => {
           ),
           sequelize.where(
             sequelize.fn("strftime", "%m", sequelize.col("data")),
-            monthFormatted 
+            monthFormatted
           ),
         ],
       },
-      attributes: ["id", "data", "title", "description", "time"], 
+      attributes: ["id", "data", "title", "description", "time"],
       order: [
         ["data", "ASC"],
         ["time", "ASC"],
-      ], 
+      ],
     });
 
     res.json(notesList);
@@ -136,7 +152,6 @@ router.get("/notatki/:userID/:year/:month", async (req, res) => {
     res.status(500).json({ message: "Błąd serwera" });
   }
 });
-
 
 router.put("/update-work-hours/:userID/:date", async (req, res) => {
   const { userID, date } = req.params;
@@ -210,7 +225,7 @@ router.get("/notes/:userID/:date", async (req, res) => {
   try {
     const noteList = await notes.findAll({
       where: { user_id: userID, data: date },
-      order: [["id", "ASC"]], 
+      order: [["id", "ASC"]],
     });
     res.json(noteList);
   } catch (err) {
@@ -219,10 +234,9 @@ router.get("/notes/:userID/:date", async (req, res) => {
   }
 });
 
-
 router.post("/add-note/:userID/:date", async (req, res) => {
   const { userID, date } = req.params;
-  const { title, description, time } = req.body; 
+  const { title, description, time } = req.body;
 
   try {
     const note = await notes.create({
@@ -230,7 +244,7 @@ router.post("/add-note/:userID/:date", async (req, res) => {
       data: date,
       title,
       description,
-      time: time, 
+      time: time,
     });
     res.json(note);
   } catch (err) {
@@ -251,7 +265,6 @@ router.delete("/delete-note/:noteID", async (req, res) => {
     res.status(500).json({ message: "Błąd podczas usuwania notatki" });
   }
 });
-
 
 router.get("/get-settings/:userID", async (req, res) => {
   try {

@@ -5,7 +5,7 @@ import React, { useEffect, useState } from 'react'
 const UserSettings = ({ isOpen, onClose, userRate, onSettingsSaved, mode }) => {
     const [typeOfJobTime, setTypeOfJobTime] = useState(null)
     const [rateType, setRateType] = useState(null)
-    const [taxReliefType, setTaxReliefType] = useState(false)
+    const [taxReliefType, setTaxReliefType] = useState("brak")
     const [vacationDays, setVacationDays] = useState(0)
     const [rate, setRate] = useState(0)
     const [nightAddon, setNightAddon] = useState(0)
