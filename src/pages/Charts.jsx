@@ -112,9 +112,9 @@ export const Charts = () => {
     console.log(chartData)
 
     return (
-        <div>
-            <div className=" h-[400px] mr-6 text-center mb-12">
-                <span className='text-xl font-bold'>Wykres przepracowanych godzin dla każdego miesiąca</span>
+        <div className='text-center'>
+            <div className=" h-[400px] mr-6 text-center mb-14">
+                <span className='text-2xl font-bold'>Wykres przepracowanych godzin dla każdego miesiąca</span>
                 <ResponsiveContainer width="100%" height="100%">
                     <LineChart data={chartData}>
                         <CartesianGrid strokeDasharray="3 3" />
@@ -130,7 +130,13 @@ export const Charts = () => {
                     </LineChart>
                 </ResponsiveContainer>
             </div>
-            <div className="w-full justify-center flex mb-2 ml-6">
+            <div className='grid'>
+                <span className='text-2xl font-bold mb-2'>Dane z zakresu</span>
+                <span className='text-xl'>Wprowadź zakres, aby wykresy się wypełniły!</span>
+            </div>
+
+            <div className="w-full justify-center flex mb-2 ml-6 mt-4">
+
                 <div className='mr-2'>
                     <label className="block mb-2 text-sm text-slate-600">Zakres od:</label>
                     <input
@@ -154,7 +160,7 @@ export const Charts = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mr-6">
                 <div className="p-4 h-[350px]">
                     <span className="text-lg font-semibold block mb-2">
-                        Wykres przepracowanych godzin (zakres dat)
+                        Wykres przepracowanych godzin
                     </span>
                     <ResponsiveContainer width="100%" height="100%">
                         <LineChart data={chartRangeData}>
