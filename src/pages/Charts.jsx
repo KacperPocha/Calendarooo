@@ -130,11 +130,11 @@ export const Charts = () => {
                     </LineChart>
                 </ResponsiveContainer>
             </div>
-            <div className="flex mb-2 ml-6">
+            <div className="w-full justify-center flex mb-2 ml-6">
                 <div className='mr-2'>
                     <label className="block mb-2 text-sm text-slate-600">Zakres od:</label>
                     <input
-                        className="w-full bg-transparent placeholder:text-slate-400 text-slate-700 text-sm border border-slate-200 rounded-md px-3 py-2"
+                        className="w-full bg-transparent placeholder:text-slate-400 text-slate-700 text-sm border border-slate-200 rounded-md px-6 py-2"
                         type="date"
                         value={rangeFrom}
                         onChange={(e) => setRangeFrom(e.target.value)}
@@ -143,7 +143,7 @@ export const Charts = () => {
                 <div>
                     <label className="block mb-2 text-sm text-slate-600">Zakres do:</label>
                     <input
-                        className="w-full bg-transparent placeholder:text-slate-400 text-slate-700 text-sm border border-slate-200 rounded-md px-3 py-2"
+                        className="w-full bg-transparent placeholder:text-slate-400 text-slate-700 text-sm border border-slate-200 rounded-md px-6 py-2"
                         type="date"
                         value={rangeTo}
                         onChange={(e) => setRangeTo(e.target.value)}
