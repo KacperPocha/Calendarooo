@@ -23,13 +23,13 @@ export const SalaryCalc = ({ workHoursInfo, daysArray, userSetting, setIsPopUpOp
     UM: { name: "Urlop macierzyński", rate: 100 },
     UOJ: { name: "Urlop ojcowski", rate: 100 },
     UR: { name: "Urlop rodzicielski (60%)", rate: 60 },
-    UR100: { name: "Urlop rodzicielski (100%)", rate: 100 },
-    UR80: { name: "Urlop rodzicielski (80%)", rate: 80 },
-    URD: { name: "Urlop rodzicielski (zasiłek 81,5%)", rate: 81.5 },
+    "UR 100%": { name: "Urlop rodzicielski (100%)", rate: 100 },
+    "UR 80%": { name: "Urlop rodzicielski (80%)", rate: 80 },
+    "UR 60%": { name: "Urlop rodzicielski (zasiłek 60%)", rate: 60 },
 
-    L4100: { name: "Zwolnienie lekarskie (L4 – 100%)", rate: 100 },
-    L480: { name: "Zwolnienie lekarskie (L4 – 80%)", rate: 80 },
-    L450: { name: "Zwolnienie lekarskie (L4 – 50%)", rate: 50 },
+    "L4 100%": { name: "Zwolnienie lekarskie (L4 – 100%)", rate: 100 },
+    "L4 80%": { name: "Zwolnienie lekarskie (L4 – 80%)", rate: 80 },
+    "L4 50%": { name: "Zwolnienie lekarskie (L4 – 50%)", rate: 50 },
 
     KR: { name: "Oddanie krwi (krwiodawstwo)", rate: 100 },
     SW: { name: "Siła wyższa", rate: 50 },
@@ -85,30 +85,35 @@ export const SalaryCalc = ({ workHoursInfo, daysArray, userSetting, setIsPopUpOp
   }
 
 
-  const totalRegularHours = rawData.reduce(
-    (sum, day) => sum + (day.godzinyPrzepracowane || 0),
-    0
-  )
-  const totalNightHours = rawData.reduce(
-    (sum, day) => sum + (day.godzinyNocne || 0),
-    0
-  )
-  const totalOvertime50 = rawData.reduce(
-    (sum, day) => sum + (day.nadgodziny50 || 0),
-    0
-  )
-  const totalOvertime100 = rawData.reduce(
-    (sum, day) => sum + (day.nadgodziny100 || 0),
-    0
-  )
-  const totalOvertime50Night = rawData.reduce(
-    (sum, day) => sum + (day.nadgodziny50Nocne || 0),
-    0
-  )
-  const totalOvertime100Night = rawData.reduce(
-    (sum, day) => sum + (day.nadgodziny100Nocne || 0),
-    0
-  )
+ const totals = rawData.reduce(
+  (acc, day) => {
+    acc.totalRegularHours += day.godzinyPrzepracowane || 0
+    acc.totalNightHours += day.godzinyNocne || 0
+    acc.totalOvertime50 += day.nadgodziny50 || 0
+    acc.totalOvertime100 += day.nadgodziny100 || 0
+    acc.totalOvertime50Night += day.nadgodziny50Nocne || 0
+    acc.totalOvertime100Night += day.nadgodziny100Nocne || 0
+    return acc
+  },
+  {
+    totalRegularHours: 0,
+    totalNightHours: 0,
+    totalOvertime50: 0,
+    totalOvertime100: 0,
+    totalOvertime50Night: 0,
+    totalOvertime100Night: 0
+  }
+)
+
+const {
+  totalRegularHours,
+  totalNightHours,
+  totalOvertime50,
+  totalOvertime100,
+  totalOvertime50Night,
+  totalOvertime100Night
+} = totals
+
 
   const stawkaBruttoMies = isNaN(settings?.rate)
     ? "0"
@@ -186,6 +191,42 @@ export const SalaryCalc = ({ workHoursInfo, daysArray, userSetting, setIsPopUpOp
   }, [workHoursInfo])
 
 
+  useEffect(() => {
+  const timer = setTimeout(() => {
+    if (!settings?.user_id || !settings?.year || !settings?.month) return;
+    if (!rawData?.length || !daysArray?.length) return;
+    if (hoursToComplete <= 0 && settings.rateType === 'month') return;
+
+    const grossValue = parseFloat(totalGross);
+    const netValue = parseFloat(netto);
+    if (isNaN(grossValue) || isNaN(netValue)) return;
+
+    const payload = {
+      userID: settings.user_id,
+      year: settings.year,
+      month: settings.month,
+      calculated_gross: grossValue,
+      calculated_net: netValue,
+      hours_norm: hoursToComplete
+    };
+
+    axios.post('http://localhost:3000/api/save-monthly-summary', payload)
+      .catch(err => console.error("Błąd podczas zapisywania podsumowania pensji:", err));
+  }, 300);
+
+  return () => clearTimeout(timer);
+}, [
+  totalGross,
+  netto,
+  hoursToComplete,
+  settings?.user_id,
+  settings?.year,
+  settings?.month,
+  settings?.rateType,
+  rawData,
+  daysArray
+]);
+
 
   return (
     <div className='w-full mt-4'>
@@ -215,16 +256,16 @@ export const SalaryCalc = ({ workHoursInfo, daysArray, userSetting, setIsPopUpOp
           <input name='hours' type="text" value={settings?.rateType === undefined ? "0 zł" : settings?.rateType === "hour" ? settings?.rate + ' zł/h' : settings?.rate + ' zł'} className='bg-slate-300 p-1 text-center text-2xl w-32' disabled />
         </div>
         <div className='mt-4 grid grid-col'>
-          <label htmlFor="hours" className='mb-2'>Dodatki:</label>
+          <label htmlFor="hours" className='mb-2 text-center'>Dodatki:</label>
           <input name='hours' type="text" value={(isNaN(settings?.otherAddons) || isNaN(settings?.constAddons)) ? "0 zł" : settings?.otherAddons + settings?.constAddons + ' zł'} className='bg-slate-300 p-1 text-center text-2xl w-32' disabled />
         </div>
         <div className='mt-4 grid grid-col'>
-          <label htmlFor="hours" className='mb-2'>Stawka brutto:</label>
+          <label htmlFor="hours" className='mb-2 text-center'>Stawka brutto:</label>
           <input name='hours' type="text" value={settings?.rateType === NaN ? "0 zł" : settings?.rateType === "hour" ? stawkaBruttoGodz + ' zł' : stawkaBruttoMies + ' zł'} className='bg-slate-300 p-1 text-center text-2xl w-32' disabled />
         </div>
         <div className='mt-4 grid grid-col'>
-          <label htmlFor="hours" className='mb-2'>Stawka netto:</label>
-          <input name='hours' type="text" value={isNaN(netto) ? "0 zł" : netto} className='bg-slate-300 p-1 text-center text-2xl w-32' disabled />
+          <label htmlFor="hours" className='mb-2 text-center'>Stawka netto:</label>
+          <input name='hours' type="text" value={isNaN(netto) ? "0 zł" : netto + " zł"} className='bg-slate-300 p-1 text-center text-2xl w-32' disabled />
         </div>
       </div>
     </div>

@@ -172,10 +172,10 @@ export const CalendarComponent = forwardRef(({ workHoursInfo, daysArrayFromChild
         });
       }
     }
-
     return daysArray;
   };
 
+  
   useEffect(() => {
     if (daysArrayFromChild) {
       daysArrayFromChild(generateDays());

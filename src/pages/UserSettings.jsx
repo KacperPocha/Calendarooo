@@ -97,6 +97,8 @@ const UserSettings = ({ isOpen, onClose, userRate, onSettingsSaved, mode }) => {
                 setNightAddon(s.nightAddon);
                 setOtherAddons(s.otherAddons)
                 setConstAddons(s.constAddons);
+                
+                
             })
             .catch((err) => console.log("Błąd przy ładowaniu ustawień:", err));
     }, [isOpen, mode, userID, year, month]);

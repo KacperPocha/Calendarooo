@@ -59,15 +59,15 @@ const userSettings = sequelize.define("user_settings", {
   },
   taxReliefType: {
     type: DataTypes.STRING,
-    defaultValue: false,
+    defaultValue: "brak",
   },
   PPK: {
     type: DataTypes.FLOAT,
-    defaultValue: false,
+    defaultValue: 0,
   },
   tradeUnions: {
     type: DataTypes.FLOAT,
-    defaultValue: false,
+    defaultValue: 0,
   },
   vacationDays: {
     type: DataTypes.INTEGER,
@@ -130,7 +130,7 @@ const notes = sequelize.define("note", {
     type: DataTypes.STRING,
     allowNull: false,
   },
-  time:{
+  time: {
     type: DataTypes.INTEGER,
     allowNull: true,
   },
@@ -148,7 +148,6 @@ work_hours.hasMany(notes, {
   sourceKey: "data",
   constraints: false,
 });
-
 
 const monthly_settings = sequelize.define(
   "monthly_settings",
@@ -171,7 +170,7 @@ const monthly_settings = sequelize.define(
     vacationDays: DataTypes.INTEGER,
     rate: DataTypes.FLOAT,
     nightAddon: DataTypes.FLOAT,
-    otherAddons: {type: DataTypes.FLOAT, defaultValue:0},
+    otherAddons: { type: DataTypes.FLOAT, defaultValue: 0 },
     constAddons: DataTypes.FLOAT,
   },
   { timestamps: true }
@@ -179,6 +178,39 @@ const monthly_settings = sequelize.define(
 
 users.hasMany(work_hours, { foreignKey: "user_id" });
 work_hours.belongsTo(users, { foreignKey: "user_id" });
+
+const monthly_summaries = sequelize.define("monthly_summary", {
+  id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
+  user_id: {
+    type: DataTypes.INTEGER,
+    references: { model: users, key: "user_id" },
+    allowNull: false,
+    onDelete: "CASCADE",
+  },
+  year: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+  },
+  month: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+  },
+  calculated_gross: {
+    type: DataTypes.FLOAT,
+    allowNull: false,
+  },
+  calculated_net: {
+    type: DataTypes.FLOAT,
+    allowNull: false,
+  },
+  hours_norm: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+  },
+});
+
+users.hasMany(monthly_summaries, { foreignKey: "user_id" });
+monthly_summaries.belongsTo(users, { foreignKey: "user_id" });
 
 sequelize.sync();
 
@@ -189,4 +221,5 @@ module.exports = {
   work_hours,
   userSettings,
   monthly_settings,
+  monthly_summaries,
 };

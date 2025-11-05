@@ -450,15 +450,15 @@ const PopUp = ({ isOpen, onClose, selectedDate, setSelectedDate, fetchWorkHours,
                                 <optgroup label="Urlopy rodzicielskie">
                                     <option disabled={selectDisabled} value="UM">Urlop macierzyński (UM)</option>
                                     <option disabled={selectDisabled} value="UOJ">Urlop ojcowski (UOJ)</option>
-                                    _ <option disabled={selectDisabled} value="UR">Urlop rodzicielski (UR)</option>
-                                    <option disabled={selectDisabled} value="URD1">Urlop rodzicielski 100% (URD1)</option>
-                                    <option disabled={selectDisabled} value="URD2">Urlop rodzicielski 60% (URD2)</option>
-                                    <option disabled={selectDisabled} value="URD3">Urlop rodzicielski 80% (URD3)</option>
+                                    <option disabled={selectDisabled} value="UR">Urlop rodzicielski (UR)</option>
+                                    <option disabled={selectDisabled} value="UR 100%">Urlop rodzicielski 100% (URD1)</option>
+                                    <option disabled={selectDisabled} value="UR 60%">Urlop rodzicielski 60% (URD2)</option>
+                                    <option disabled={selectDisabled} value="UR 80%">Urlop rodzicielski 80% (URD3)</option>
                                 </optgroup>
                                 <optgroup label="Zwolnienia lekarskie (L4)">
-                                    <option disabled={selectDisabled} value="L4100">L4 100% — np. ciąża, wypadek w pracy</option>
-                                    <option disabled={selectDisabled} value="L480">L4 80% — zwykłe chorobowe</option>
-                                    <option disabled={selectDisabled} value="L450">L4 50% — przedsiębiorca lub zasiłek specjalny</option>
+                                    <option disabled={selectDisabled} value="L4 100%">L4 100% — np. ciąża, wypadek w pracy</option>
+                                    <option disabled={selectDisabled} value="L4 80%">L4 80% — zwykłe chorobowe</option>
+                                    <option disabled={selectDisabled} value="L4 50%">L4 50% — przedsiębiorca lub zasiłek specjalny</option>
                                 </optgroup>
                                 <optgroup label="Inne usprawiedliwione">
                                     <option disabled={selectDisabled} value="KR">Oddanie krwi (KR)</option>

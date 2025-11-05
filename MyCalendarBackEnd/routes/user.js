@@ -9,6 +9,7 @@ const {
   monthly_settings,
   sequelize,
   notes,
+  monthly_summaries,
 } = require("../db");
 const authenticateToken = require("../utils/authMiddleware");
 const { default: axios } = require("axios");
@@ -220,6 +221,71 @@ router.put("/delete-workHours/:userID/:date", async (req, res) => {
   }
 });
 
+router.post("/save-monthly-summary", async (req, res) => {
+  const { userID, year, month, calculated_gross, calculated_net, hours_norm } =
+    req.body;
+
+  if (!userID || !year || !month || calculated_gross == null || calculated_net == null || hours_norm == null) {
+    return res.status(400).json({ message: "Brak wszystkich wymaganych danych." });
+  }
+
+  const summaryData = {
+    user_id: parseInt(userID),
+    year: parseInt(year),
+    month: parseInt(month),
+    calculated_gross: parseFloat(calculated_gross),
+    calculated_net: parseFloat(calculated_net),
+    hours_norm: parseInt(hours_norm),
+  };
+
+  try {
+    let summary = await monthly_summaries.findOne({
+      where: {
+        user_id: summaryData.user_id,
+        year: summaryData.year,
+        month: summaryData.month,
+      },
+    });
+
+    if (summary) {
+      await summary.update(summaryData);
+      res.status(200).json({ message: "Podsumowanie miesiąca zostało zaktualizowane." });
+    } else {
+      await monthly_summaries.create(summaryData);
+      res.status(201).json({ message: "Podsumowanie miesiąca zostało utworzone." });
+  }
+  } catch (err) {
+    console.error("Błąd podczas zapisu podsumowania miesiąca:", err);
+    res.status(500).json({ message: "Błąd serwera." });
+  }
+});
+
+router.get("/get-salary-history/:userID", async (req, res) => {
+  const { userID } = req.params;
+
+  try {
+    const history = await monthly_summaries.findAll({
+      where: { user_id: userID },
+      order: [ 
+        ["year", "ASC"],
+        ["month", "ASC"],
+      ],
+    });
+
+    const chartData = history.map(entry => ({
+      miesiac: `${String(entry.month).padStart(2, '0')}/${entry.year}`,
+      Brutto: entry.calculated_gross,
+      Netto: entry.calculated_net,
+    }));
+
+    res.json(chartData);
+
+  } catch (err) {
+    console.error("Błąd podczas pobierania historii pensji:", err);
+    res.status(500).json({ message: "Błąd serwera." });
+  }
+});
+
 router.get("/notes/:userID/:date", async (req, res) => {
   const { userID, date } = req.params;
   try {
@@ -368,6 +434,20 @@ router.get("/get-monthly-settings/:userID/:year/:month", async (req, res) => {
         otherAddons: 0,
       });
     }
+
+    res.json(monthly);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Błąd serwera" });
+  }
+});
+
+router.get("/get-monthly-allsettings/:userID", async (req, res) => {
+  const { userID } = req.params;
+  try {
+    let monthly = await monthly_settings.findAll({
+      where: { user_id: userID },
+    });
 
     res.json(monthly);
   } catch (err) {
