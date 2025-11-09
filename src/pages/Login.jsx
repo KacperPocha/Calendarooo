@@ -2,6 +2,7 @@ import axios from 'axios'
 import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import io from 'socket.io-client';
+import loginIcon from '/images/loginIcon.webp'
 
 const socket = io('http://localhost:3000');
 
@@ -57,7 +58,7 @@ export const Login = () => {
         } catch (error) {
             console.error(error);
             if (error.response?.data?.message) {
-                alert(error.response.data.message); // pokaże np. "Konto nie jest zweryfikowane przez email!"
+                alert(error.response.data.message);
             } else {
                 alert('Błąd logowania. Sprawdź login i hasło.');
             }
@@ -73,23 +74,31 @@ export const Login = () => {
 
 
     return (
-        <div className='w-screen h-screen'>
-            <div className='grid w-screen h-screen place-content-center'>
-                <button className='border-4 mb-4 text-center p-2' onClick={register}>Rejestracja</button>
-                <div className='border-4 grid w-72 h-56'>
-                    <form onSubmit={handleSubmit} >
-                        <div className='grid'>
+        <div className="w-screen h-screen bg-gradient-to-t from-sky-500 to-indigo-600 flex items-center justify-center">
+            <div className="bg-white rounded-xl shadow-2xl w-[900px] h-[500px] grid grid-cols-2 overflow-hidden">
+
+                <div className="flex items-center justify-center">
+                    <img src={loginIcon} alt="Login" className="w-60" />
+                </div>
+
+                <div className="flex flex-col items-center justify-center px-12">
+                    <form onSubmit={handleSubmit} className="w-full max-w-sm">
+                        <h1 className="text-3xl font-semibold mb-6 text-gray-800 text-center">
+                            Zaloguj się
+                        </h1>
+
+                        <div className="grid gap-4">
                             <input
                                 type="text"
-                                className='border-2 m-2 text-center'
-                                placeholder='Login'
+                                className="border-2 rounded-md py-2 px-4 text-center focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                                placeholder="Login"
                                 value={username}
                                 onChange={(e) => setUsername(e.target.value)}
                             />
                             <input
                                 type="password"
-                                className='border-2 m-2 text-center'
-                                placeholder='Hasło'
+                                className="border-2 rounded-md py-2 px-4 text-center focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                                placeholder="Hasło"
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
                             />
@@ -97,18 +106,29 @@ export const Login = () => {
                             <button
                                 type="submit"
                                 disabled={loading}
-                                className="border-2 m-2"
+                                className="border-2 rounded-md py-2 px-4 bg-indigo-500 text-white hover:bg-indigo-600 transition"
                             >
                                 {loading ? 'Logowanie...' : 'Zaloguj'}
                             </button>
                         </div>
-
                     </form>
-                    <button onClick={() => navigate('/forgot-password')}>Zapomniałeś hasło?</button>
+
+                    <div className="flex flex-col items-center mt-6 space-y-2">
+                        <button
+                            className="text-indigo-600 hover:underline"
+                            onClick={register}
+                        >
+                            Rejestracja
+                        </button>
+                        <button
+                            className="text-gray-600 hover:underline"
+                            onClick={() => navigate('/forgot-password')}
+                        >
+                            Zapomniałeś hasła?
+                        </button>
+                    </div>
                 </div>
-
             </div>
-
         </div>
     )
 }

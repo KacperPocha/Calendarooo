@@ -1,6 +1,7 @@
 import axios from 'axios'
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import forgotPasswordIcon from '/images/forgotPasswordIcon.webp'
 
 export const ForgotPassword = () => {
     const [email, setEmail] = useState('')
@@ -39,29 +40,57 @@ export const ForgotPassword = () => {
 
 
     return (
-        <div className='grid w-screen h-screen place-content-center'>
-            <form onSubmit={handleSubmit}>
-                <div className="border-4 grid w-72 h-64 p-4">
-                    <div className='grid'>
-                        <input
-                            type="email"
-                            placeholder="E-mail"
-                            className="border-2 p-2 text-center"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                        />
+        <div className="w-screen h-screen bg-gradient-to-t from-sky-500 to-indigo-600 flex items-center justify-center">
+            <div className="bg-white rounded-xl shadow-2xl w-[900px] h-[500px] grid grid-cols-2 overflow-hidden">
 
-                        <button
-                            type="submit"
-                            disabled={loading}
-                            className="border-2 p-2"
-                        >
-                            {loading ? 'Resetowanie...' : 'Resetuj hasło'}
-                        </button>
-                    </div>
+                <div className="flex items-center justify-center">
+                    <img src={forgotPasswordIcon} alt="Login" className="w-60" />
+                </div>
+
+                <div className="flex flex-col items-center justify-center px-14">
+                    <form onSubmit={handleSubmit}>
+                        <h1 className="text-3xl font-semibold mb-6 text-gray-800 text-center">
+                            Zapomniałem hasła
+                        </h1>
+
+                        <div className="grid gap-4">
+                            <input
+                                type="email"
+                                placeholder="E-mail"
+                                className="border-2 rounded-md py-2 px-4 text-center focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                                autoComplete="off"
+                            />
+
+                            <button
+                                type="submit"
+                                disabled={loading}
+                                className="border-2 rounded-md py-2 px-4 bg-indigo-500 text-white hover:bg-indigo-600 transition"
+                            >
+                                {loading ? 'Resetowanie...' : 'Resetuj hasło'}
+                            </button>
+
+                            <div className="flex flex-col items-center space-y-4">
+                                <button
+                                    className="text-indigo-600 hover:underline"
+                                    onClick={() => navigate('/')}
+                                >
+                                    Logowanie
+                                </button>
+                                <button
+                                    className="text-gray-600 hover:underline"
+                                    onClick={() => navigate('/register')}
+                                >
+                                    Rejestracja
+                                </button>
+
+                            </div>
+                        </div>
+                    </form>
 
                 </div>
-            </form>
+            </div>
         </div>
     )
 }

@@ -2,12 +2,16 @@ import axios from 'axios'
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useLocation } from 'react-router-dom';
+import resetPasswordIcon from '/images/resetPasswordIcon.webp'
+import eye from '/images/eye.svg'
+import eyeSlash from '/images/eyeSlash.svg'
 
 export const ResetPassword = () => {
     const [password, setPassword] = useState('')
-    const [repeatPassword, setRepeatPassword] = useState('')
+    const [repetedPassword, setReptedPassword] = useState('')
     const [loading, setLoading] = useState('')
     const [showPassword, setShowPassword] = useState(false);
+    const [showReaptedPassword, setShowReaptedPassword] = useState(false);
     const navigate = useNavigate();
     const location = useLocation();
     const searchParams = new URLSearchParams(location.search);
@@ -16,12 +20,12 @@ export const ResetPassword = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        if (!password || !repeatPassword) {
+        if (!password || !repetedPassword) {
             alert('Wprowadź hasło');
             return;
         }
 
-        if (password !== repeatPassword) {
+        if (password !== repetedPassword) {
             alert('Hasła nie są takie same');
             return;
         }
@@ -63,64 +67,84 @@ export const ResetPassword = () => {
         setShowPassword(prev => !prev);
     };
 
+    const toggleReaptedPassword = () => {
+        setShowReaptedPassword(prev => !prev);
+    };
+
+
 
     return (
-        <div className='grid w-screen h-screen place-content-center'>
-            <form onSubmit={handleSubmit}>
-                <div className="border-4 grid w-72 h-64 p-4">
-                    <div className='grid'>
-                        <div className="flex flex-col items-center">
-                            <div className="relative w-full">
+        <div className="w-screen h-screen bg-gradient-to-t from-sky-500 to-indigo-600 flex items-center justify-center">
+            <div className="bg-white rounded-xl shadow-2xl w-[900px] h-[500px] grid grid-cols-2 overflow-hidden">
+                <div className="flex items-center justify-center">
+                    <img src={resetPasswordIcon} alt="Login" className="w-60" />
+                </div>
+                <div className="flex flex-col items-center justify-center px-14">
+                    <form onSubmit={handleSubmit}>
+
+                        <h1 className="text-3xl font-semibold mb-6 text-gray-800 text-center">
+                            Zresetuj hasło
+                        </h1>
+
+                        <div className="grid gap-4">
+                            <div className='flex items-center'>
                                 <input
                                     type={showPassword ? "text" : "password"}
                                     placeholder="Hasło"
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
-                                    className="border-2 w-full p-3 pr-12 text-center"
+                                    className="border-2 rounded-md py-2 px-14 text-center focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                                    autoComplete="new-password"
                                 />
-                                <span className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 text-sm">
+
+                                <span className="text-gray-500 text-sm ml-3">
                                     {password.length}
                                 </span>
+                                <img
+                                    src={showPassword === false ? eyeSlash : eye}
+                                    onClick={togglePassword}
+                                    className="w-6 ml-4"
+                                />
+
+
                             </div>
 
-
-                        </div>
-                        <div className="flex flex-col items-center">
-                            <div className="relative w-full">
+                            <div className='flex items-center'>
                                 <input
-                                    type={showPassword ? "text" : "password"}
-                                    placeholder="Hasło"
-                                    value={repeatPassword}
-                                    onChange={(e) => setRepeatPassword(e.target.value)}
-                                    className="border-2 w-full p-3 pr-12 text-center"
+                                    type={showReaptedPassword ? "text" : "password"}
+                                    placeholder="Powtórz hasło"
+                                    value={repetedPassword}
+                                    onChange={(e) => setReptedPassword(e.target.value)}
+                                    className="border-2 rounded-md py-2 px-14 text-center focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                                    autoComplete="new-password"
                                 />
-                                <span className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 text-sm">
-                                    {repeatPassword.length}
+
+                                <span className="text-gray-500 text-sm ml-3">
+                                    {repetedPassword.length}
                                 </span>
+                                <img
+                                    src={showReaptedPassword === false ? eyeSlash : eye}
+                                    onClick={toggleReaptedPassword}
+                                    className="w-6 ml-4"
+                                />
+
+
                             </div>
 
                             <button
-                                type="button"
-                                onClick={togglePassword}
-                                className="border-2 p-1 mt-2"
+                                type="submit"
+                                disabled={loading}
+                                className="border-2 rounded-md py-2 px-4 bg-indigo-500 text-white hover:bg-indigo-600 transition"
                             >
-                                {showPassword ? "Ukryj hasło" : "Pokaż hasło"}
+                                {loading ? 'Resetowanie...' : 'Resetuj hasło'}
                             </button>
                         </div>
 
 
-                        <button
-                            type="submit"
-                            disabled={loading}
-                            className="border-2 p-2"
-                        >
-                            {loading ? 'Resetowanie...' : 'Resetuj hasło'}
-                        </button>
-                    </div>
-
+                    </form>
                 </div>
-            </form>
-        </div>
+            </div >
+        </div >
     )
 }
 
