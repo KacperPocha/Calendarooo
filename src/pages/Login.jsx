@@ -44,7 +44,7 @@ export const Login = () => {
                 localStorage.setItem('userID', response.data.userID);
                 localStorage.setItem('username', response.data.username);
 
-                alert('Logowanie pomyślne!');
+               
 
                 socket.emit('user-logged-in', {
                     userID: response.data.userID,
