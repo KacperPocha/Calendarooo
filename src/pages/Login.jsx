@@ -75,15 +75,15 @@ export const Login = () => {
 
     return (
         <div className="w-screen h-screen bg-gradient-to-t from-sky-500 to-indigo-600 flex items-center justify-center">
-            <div className="bg-white rounded-xl shadow-2xl w-[900px] h-[500px] grid grid-cols-2 overflow-hidden">
+            <div className="bg-white rounded-xl shadow-2xl md:w-[600px] md:h-[400px] lg:w-[800px] lg:h-[400px] xl:w-[900px] xl:h-[500px] 2xl:w-[1100px] 2xl:h-[600px] md:grid md:grid-cols-2 overflow-hidden">
 
                 <div className="flex items-center justify-center">
-                    <img src={loginIcon} alt="Login" className="w-60" />
+                    <img src={loginIcon} alt="Login" className="xs:mt-6 xs:mb-6 xs:w-40 md:w-52 lg:w-72 xl:w-80" />
                 </div>
 
                 <div className="flex flex-col items-center justify-center px-12">
                     <form onSubmit={handleSubmit} className="w-full max-w-sm">
-                        <h1 className="text-3xl font-semibold mb-6 text-gray-800 text-center">
+                        <h1 className="xs:text-2xl md:text-2xl lg:text-2xl xl:text-3xl 2xl:text-4xl font-semibold mb-6 text-gray-800 text-center">
                             Zaloguj się
                         </h1>
 
@@ -113,7 +113,7 @@ export const Login = () => {
                         </div>
                     </form>
 
-                    <div className="flex flex-col items-center mt-6 space-y-2">
+                    <div className="flex flex-col items-center mt-6 space-y-2 xs:mb-6">
                         <button
                             className="text-indigo-600 hover:underline"
                             onClick={register}

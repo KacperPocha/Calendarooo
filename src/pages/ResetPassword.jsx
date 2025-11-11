@@ -30,14 +30,12 @@ export const ResetPassword = () => {
             return;
         }
 
-
         if (!passwordRegex.test(password)) {
             alert(
                 'Hasło musi mieć min. 8 znaków, 1 dużą literę, 1 małą literę, 1 cyfrę i 1 znak specjalny!'
             );
             return;
         }
-
 
         setLoading(true);
 
@@ -63,88 +61,68 @@ export const ResetPassword = () => {
         }
     };
 
-    const togglePassword = () => {
-        setShowPassword(prev => !prev);
-    };
-
-    const toggleReaptedPassword = () => {
-        setShowReaptedPassword(prev => !prev);
-    };
-
-
+    const togglePassword = () => setShowPassword(prev => !prev);
+    const toggleReaptedPassword = () => setShowReaptedPassword(prev => !prev);
 
     return (
         <div className="w-screen h-screen bg-gradient-to-t from-sky-500 to-indigo-600 flex items-center justify-center">
-            <div className="bg-white rounded-xl shadow-2xl w-[900px] h-[500px] grid grid-cols-2 overflow-hidden">
+            <div className="bg-white rounded-xl shadow-2xl md:w-[600px] md:h-[400px] lg:w-[800px] lg:h-[400px] xl:w-[900px] xl:h-[500px] 2xl:w-[1100px] 2xl:h-[600px] md:grid md:grid-cols-2 overflow-hidden">
                 <div className="flex items-center justify-center">
-                    <img src={resetPasswordIcon} alt="Login" className="w-60" />
+                    <img src={resetPasswordIcon} alt="Reset Password" className="xs:mt-6 xs:mb-6 xs:w-40 md:w-52 lg:w-72 xl:w-80" />
                 </div>
-                <div className="flex flex-col items-center justify-center px-14">
-                    <form onSubmit={handleSubmit}>
 
-                        <h1 className="text-3xl font-semibold mb-6 text-gray-800 text-center">
+                <div className="flex flex-col items-center justify-center px-12">
+                    <form onSubmit={handleSubmit} className="w-full max-w-sm">
+                        <h1 className="xs:text-2xl md:text-2xl lg:text-2xl xl:text-3xl 2xl:text-4xl font-semibold mb-6 text-gray-800 text-center">
                             Zresetuj hasło
                         </h1>
 
                         <div className="grid gap-4">
-                            <div className='flex items-center'>
+                            <div className="flex items-center justify-center relative">
                                 <input
                                     type={showPassword ? "text" : "password"}
                                     placeholder="Hasło"
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
-                                    className="border-2 rounded-md py-2 px-14 text-center focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                                    className="border-2 rounded-md py-2 px-4 text-center w-full focus:outline-none focus:ring-2 focus:ring-indigo-400"
                                     autoComplete="new-password"
                                 />
-
-                                <span className="text-gray-500 text-sm ml-3">
-                                    {password.length}
-                                </span>
                                 <img
-                                    src={showPassword === false ? eyeSlash : eye}
+                                    src={showPassword ? eye : eyeSlash}
                                     onClick={togglePassword}
-                                    className="w-6 ml-4"
+                                    className="w-6 absolute right-4 cursor-pointer"
+                                    alt="toggle password"
                                 />
-
-
                             </div>
 
-                            <div className='flex items-center'>
+                            <div className="flex items-center justify-center relative">
                                 <input
                                     type={showReaptedPassword ? "text" : "password"}
                                     placeholder="Powtórz hasło"
                                     value={repetedPassword}
                                     onChange={(e) => setReptedPassword(e.target.value)}
-                                    className="border-2 rounded-md py-2 px-14 text-center focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                                    className="border-2 rounded-md py-2 px-4 text-center w-full focus:outline-none focus:ring-2 focus:ring-indigo-400"
                                     autoComplete="new-password"
                                 />
-
-                                <span className="text-gray-500 text-sm ml-3">
-                                    {repetedPassword.length}
-                                </span>
                                 <img
-                                    src={showReaptedPassword === false ? eyeSlash : eye}
+                                    src={showReaptedPassword ? eye : eyeSlash}
                                     onClick={toggleReaptedPassword}
-                                    className="w-6 ml-4"
+                                    className="w-6 absolute right-4 cursor-pointer"
+                                    alt="toggle password"
                                 />
-
-
                             </div>
 
                             <button
                                 type="submit"
                                 disabled={loading}
-                                className="border-2 rounded-md py-2 px-4 bg-indigo-500 text-white hover:bg-indigo-600 transition"
+                                className="border-2 rounded-md py-2 px-4 bg-indigo-500 text-white hover:bg-indigo-600 transition xs:mb-6"
                             >
                                 {loading ? 'Resetowanie...' : 'Resetuj hasło'}
                             </button>
                         </div>
-
-
                     </form>
                 </div>
-            </div >
-        </div >
+            </div>
+        </div>
     )
 }
-
