@@ -287,7 +287,7 @@ export const CalendarComponent = forwardRef(({ workHoursInfo, daysArrayFromChild
           Poprzedni
         </button>
         <h2 className="text-xl font-bold cursor-default">
-          {currentDate.toLocaleString("default", { month: "long" })}{" "}
+          {currentDate.toLocaleString("default", { month: "long" }).charAt(0).toUpperCase()+ currentDate.toLocaleString("default", { month: "long" }).slice(1)}{" "}
           {currentDate.getFullYear()}
         </h2>
         <button

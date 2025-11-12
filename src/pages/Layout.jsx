@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useNavigate, Outlet } from "react-router-dom";
 import axios from "axios";
 import io from 'socket.io-client';
-import { Menu } from "./Menu";
+import { Nav } from "./Nav";
 import Usersettings from "./UserSettings";
 
 const socket = io('http://localhost:3000');
@@ -47,7 +47,7 @@ export const Layout = () => {
     return (
         <div className="w-full">
             <div className="flex w-full">
-                <Menu
+                <Nav
                     setMode={() => {}} 
                     setIsPopUpOpen={setIsMainSettingsOpen}
                     onLogoutClick={() => {

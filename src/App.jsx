@@ -7,6 +7,8 @@ import { ForgotPassword } from './pages/ForgotPassword'
 import { ResetPassword } from './pages/ResetPassword'
 import { Charts } from './pages/Charts'
 import { Layout } from './pages/Layout' 
+import 'rsuite/dist/rsuite-no-reset.min.css';
+import { GoogleAuthCallback } from './pages/GoogleAuthCallback'
 
 
 function App() {
@@ -16,6 +18,7 @@ function App() {
     <Router>
       <Routes>
         <Route path="/" element={<Login />} />
+        <Route path="/auth/callback" element={<GoogleAuthCallback />} />
         <Route path="/register" element={<Register />} />
         <Route path="/verify-email" element={<VerifyEmail/>} />
         <Route path="/forgot-password" element={<ForgotPassword/>} />

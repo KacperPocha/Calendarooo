@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import io from 'socket.io-client';
 import loginIcon from '/images/loginIcon.webp'
+import googleLogo from '/images/googleLogo.svg'
 
 const socket = io('http://localhost:3000');
 
@@ -44,7 +45,7 @@ export const Login = () => {
                 localStorage.setItem('userID', response.data.userID);
                 localStorage.setItem('username', response.data.username);
 
-               
+
 
                 socket.emit('user-logged-in', {
                     userID: response.data.userID,
@@ -70,6 +71,10 @@ export const Login = () => {
     const register = () => {
         navigate('/register')
     }
+
+    const handleGoogleLogin = () => {
+        window.location.href = "http://localhost:3000/api/auth/google";
+    };
 
 
 
@@ -112,6 +117,12 @@ export const Login = () => {
                             </button>
                         </div>
                     </form>
+                    <button
+                        onClick={handleGoogleLogin}
+                        className="bg-gray-200 w-12 mt-6 p-2 hover:p-1 rounded-full hover:border-gray-300 hover:border-4 hover:border"
+                    >
+                       <img src={googleLogo} alt="Logo Google" />
+                    </button>
 
                     <div className="flex flex-col items-center mt-6 space-y-2 xs:mb-6">
                         <button

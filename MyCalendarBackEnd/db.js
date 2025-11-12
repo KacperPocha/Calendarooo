@@ -22,16 +22,21 @@ const users = sequelize.define("user", {
   username: {
     type: DataTypes.STRING,
     allowNull: false,
-    unique: true,
+    unique: false,
   },
   password: {
     type: DataTypes.STRING,
-    allowNull: false,
+    allowNull: true,
   },
   verified: {
     type: DataTypes.BOOLEAN,
     defaultValue: false,
   },
+  googleId: {
+    type: DataTypes.STRING,
+    allowNull: true,
+    unique: true,
+  },
 });
 
 const userSettings = sequelize.define("user_settings", {

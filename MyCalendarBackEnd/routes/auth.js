@@ -5,10 +5,39 @@ const { users } = require("../db");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const transporter = require("../utils/mailer");
+const passport = require("passport");
+const GoogleStrategy = require("passport-google-oauth20").Strategy;
 
 const JWT_SECRET = process.env.JWT_SECRET;
 const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*]).{8,}$/;
 
+router.get(
+  "/auth/google",
+  passport.authenticate("google", {
+    scope: ["profile", "email"], 
+    session: false, 
+  })
+);
+
+router.get(
+  "/auth/google/callback",
+  passport.authenticate("google", {
+    failureRedirect: "http://localhost:5173/login?error=true", 
+    session: false,
+  }),
+  (req, res) => {
+    const user = req.user;
+    const token = jwt.sign(
+      { userID: user.user_id, username: user.username },
+      JWT_SECRET,
+      { expiresIn: "1h" }
+    );
+
+    res.redirect(
+      `http://localhost:5173/auth/callback?token=${token}&userID=${user.user_id}&username=${user.username}`
+    );
+  }
+);
 
 router.post("/register", async (req, res) => {
   const { username, email, password, rate } = req.body;
